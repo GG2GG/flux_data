@@ -1,31 +1,25 @@
-# Retail Placement ROI Prototype — Hackathon
+# Retail Product Placement Agent
 
-This is a 24-hour rapid prototype to simulate retail shelf placement ROI using:
-- Unity (2D scene + No-code UI buttons for shelves)
-- Google Sheets (data & analytics)
-- Synthetic knowledge base
-- Precomputed ROI JSON
-- Simple shelf hotspot interactions
+This is a multi-agent system that suggests product placements based on various metrics mined from historical data. 
+The Person enquiring, is a Business Owner, he/she provides details of their product:
+- Product
+- Budget (for placement)
+- Price
+- Category
+- Target Sale
+- Target Customers
+- Expected Return over Investment
 
-## Assumptions
-- All retail stats are synthetic and created for demo purposes.
-- `traffic_index` = approximate relative footfall per shelf.
-- `visibility_factor` = multiplier based on shelf type:
-  - endcap = 1.5
-  - eye_level = 1.2
-  - low_shelf = 0.8
-  - checkout = 1.6
-- Category conversion rates are generic industry estimates.
-- ROI values in shelves_roi.json are precomputed for speed.
+## Rough Agent Flow
 
-## Data Files
-- products.csv — product pricing & margin
-- shelves.csv — coordinates + visibility data
-- retail_kb.csv — category-level retail insights
-- shelves_roi.json — expected ROI for each shelf
-
-## Unity Usage
-- 2D scene with floorplan.png
-- Place UI buttons over each shelf region
-- Click shelf → show ROI panel
-- “Best Shelf Suggestion” highlights highest ROI shelf from JSON (S4)
+1. Get product details
+2. Analyze ROI based on historical data of sale and region
+3. Suggest ROI scores based on region. eg. 
+```json
+{
+  "Main Entrance Isle": 0.7,
+  "Beverage Isle": 1.4,
+  ...
+}
+```
+4. After the suggestions, the agent will be asked follow up questions where it should defend it's suggestions backed by data. It should be able to pull up competitor products and their metrics to show that the data is suggested is historically accurate.

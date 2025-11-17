@@ -1,0 +1,5 @@
+shelf_id,name,x,y,width,height,zone,traffic_index,visibility_factor,notes
+S1,Endcap A,300,120,80,40,endcap,250,1.5,Near entrance high traffic
+S2,EyeLevel Row 3,150,220,60,30,eye_level,180,1.2,Central aisle
+S3,BottomShelf Row 5,80,320,60,30,low_shelf,120,0.8,Low visibility
+S4,Checkout Shelf,420,150,90,35,checkout,300,1.6,Impulse buying zone
