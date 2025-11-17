@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Product Placement - Planogram Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .planogram-container {
+            grid-column: 1 / -1;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            min-height: 600px;
+        }
+
+        .store-layout {
+            width: 100%;
+            height: 550px;
+            position: relative;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .shelf-location {
+            position: absolute;
+            border: 3px solid #6c757d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .shelf-location:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .shelf-location.recommended {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            animation: pulse 2s infinite;
+        }
+
+        .shelf-location.top-recommendation {
+            border-color: #ffc107;
+            border-width: 4px;
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+        }
+
+        .roi-badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .top-recommendation .roi-badge {
+            background: #ffc107;
+            color: #000;
+            font-size: 14px;
+            animation: glow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px #ffc107; }
+            50% { box-shadow: 0 0 20px #ffc107; }
+        }
+
+        .product-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input, .form-group select {
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .recommendations-list {
+            list-style: none;
+            display: grid;
+            gap: 15px;
+        }
+
+        .recommendation-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.2s;
+        }
+
+        .recommendation-item:hover {
+            transform: translateX(5px);
+        }
+
+        .recommendation-item.top {
+            border-left-color: #ffc107;
+            background: linear-gradient(to right, #fff3cd 0%, white 50%);
+        }
+
+        .recommendation-item .location-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .recommendation-item .roi-score {
+            color: #28a745;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .legend-box {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+
+        .legend-box.top {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+            border-color: #ffc107;
+        }
+
+        .legend-box.recommended {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-color: #28a745;
+        }
+
+        .legend-box.standard {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #6c757d;
+        }
+
+        .icon {
+            font-size: 1.5em;
+        }
+
+        .explanation {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 2px solid #dee2e6;
+        }
+
+        .explanation h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .explanation p {
+            line-height: 1.6;
+            color: #495057;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: #6c757d;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .store-layout {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 Retail Product Placement Optimizer</h1>
+            <p>AI-Powered Planogram Analysis with Real-Time ROI Predictions</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Product Input Form -->
+            <div class="section">
+                <h2><span class="icon">📦</span> Product Details</h2>
+                <form class="product-form" id="productForm">
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <input type="text" id="productName" value="Premium Energy Drink" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="Beverages">Beverages</option>
+                            <option value="Snacks">Snacks</option>
+                            <option value="Dairy">Dairy</option>
+                            <option value="Bakery">Bakery</option>
+                            <option value="Personal Care">Personal Care</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Price ($)</label>
+                        <input type="number" id="price" value="2.99" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="budget">Placement Budget ($)</label>
+                        <input type="number" id="budget" value="5000" step="100" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetSales">Target Sales (units)</label>
+                        <input type="number" id="targetSales" value="1000" min="0" required>
+                    </div>
+
+                    <button type="submit" class="btn">🎯 Analyze Placement</button>
+                </form>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="section">
+                <h2><span class="icon">📊</span> Top Recommendations</h2>
+                <div id="recommendationsContainer">
+                    <p style="color: #6c757d; text-align: center;">
+                        Submit product details to see recommendations
+                    </p>
+                </div>
+            </div>
+
+            <!-- Store Planogram -->
+            <div class="planogram-container">
+                <h2><span class="icon">🗺️</span> Store Planogram - Interactive Map</h2>
+                <div class="store-layout" id="storeLayout">
+                    <!-- Shelves will be dynamically positioned here -->
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-box top"></div>
+                        <span><strong>Top Recommendation</strong></span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box recommended"></div>
+                        <span>Recommended (Top 5)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box standard"></div>
+                        <span>Available Location</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock store locations (matching our generated data)
+        const storeLocations = [
+            { id: 'L001', name: 'End Cap 1 - Beverages', x: 10, y: 10, width: 180, height: 120, zone: 'End Cap', traffic: 'high' },
+            { id: 'L002', name: 'Main Entrance Display', x: 650, y: 10, width: 200, height: 100, zone: 'Main Entrance', traffic: 'high' },
+            { id: 'L003', name: 'Checkout Lane 1', x: 750, y: 420, width: 140, height: 80, zone: 'Checkout', traffic: 'high' },
+            { id: 'L004', name: 'Beverage Aisle - Eye Level', x: 250, y: 180, width: 160, height: 100, zone: 'Eye Level', traffic: 'medium' },
+            { id: 'L005', name: 'Snack Aisle - Eye Level', x: 450, y: 180, width: 160, height: 100, zone: 'Eye Level', traffic: 'medium' },
+            { id: 'L006', name: 'Dairy Section - Regular', x: 100, y: 320, width: 180, height: 120, zone: 'Regular Shelf', traffic: 'medium' },
+            { id: 'L007', name: 'Bakery Display', x: 320, y: 320, width: 160, height: 100, zone: 'Regular Shelf', traffic: 'medium' },
+            { id: 'L008', name: 'End Cap 2 - Snacks', x: 10, y: 180, width: 180, height: 100, zone: 'End Cap', traffic: 'high' },
+            { id: 'L009', name: 'Personal Care Aisle', x: 520, y: 320, width: 160, height: 100, zone: 'Regular Shelf', traffic: 'low' },
+            { id: 'L010', name: 'Beverage Aisle - Bottom', x: 250, y: 450, width: 160, height: 80, zone: 'Bottom Shelf', traffic: 'medium' }
+        ];
+
+        let currentRecommendations = null;
+
+        // Initialize planogram
+        function initializePlanogram() {
+            const storeLayout = document.getElementById('storeLayout');
+            storeLayout.innerHTML = '';
+
+            storeLocations.forEach(location => {
+                const shelfDiv = document.createElement('div');
+                shelfDiv.className = 'shelf-location';
+                shelfDiv.id = location.id;
+                shelfDiv.style.left = location.x + 'px';
+                shelfDiv.style.top = location.y + 'px';
+                shelfDiv.style.width = location.width + 'px';
+                shelfDiv.style.height = location.height + 'px';
+
+                shelfDiv.innerHTML = `
+                    <div style="font-size: 12px;">${location.name}</div>
+                    <div style="font-size: 10px; opacity: 0.7;">${location.zone}</div>
+                `;
+
+                shelfDiv.addEventListener('click', () => showLocationDetails(location));
+
+                storeLayout.appendChild(shelfDiv);
+            });
+        }
+
+        // Show location details
+        function showLocationDetails(location) {
+            const roi = currentRecommendations ?
+                currentRecommendations.find(r => r.location.includes(location.name.split(' - ')[0])) : null;
+
+            alert(`📍 ${location.name}\n\n` +
+                  `Zone: ${location.zone}\n` +
+                  `Traffic: ${location.traffic}\n` +
+                  (roi ? `ROI: ${roi.roi.toFixed(2)}x` : 'Click "Analyze Placement" for ROI'));
+        }
+
+        // Handle form submission
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const productData = {
+                product_name: document.getElementById('productName').value,
+                category: document.getElementById('category').value,
+                price: parseFloat(document.getElementById('price').value),
+                budget: parseFloat(document.getElementById('budget').value),
+                target_sales: parseInt(document.getElementById('targetSales').value),
+                target_customers: 'General shoppers',
+                expected_roi: 1.5
+            };
+
+            // Show loading state
+            const container = document.getElementById('recommendationsContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Analyzing placement options...</p></div>';
+
+            try {
+                // Call our API
+                const response = await fetch('http://localhost:8000/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(productData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                displayRecommendations(data);
+            } catch (error) {
+                console.error('Error:', error);
+                // Use mock data if API fails
+                displayMockRecommendations(productData);
+            }
+        });
+
+        // Display recommendations
+        function displayRecommendations(data) {
+            const recommendations = Object.entries(data.recommendations).map(([location, roi]) => ({
+                location,
+                roi
+            }));
+
+            currentRecommendations = recommendations;
+
+            // Update UI
+            displayRecommendationsList(recommendations, data.explanation);
+            highlightLocationsOnPlanogram(recommendations);
+        }
+
+        // Display mock recommendations
+        function displayMockRecommendations(productData) {
+            const mockRecommendations = [
+                { location: 'End Cap 1 - Beverages', roi: 1.85 },
+                { location: 'Main Entrance Display', roi: 1.62 },
+                { location: 'Checkout Lane 1', roi: 1.58 },
+                { location: 'Beverage Aisle - Eye Level', roi: 1.45 },
+                { location: 'End Cap 2 - Snacks', roi: 1.38 }
+            ];
+
+            currentRecommendations = mockRecommendations;
+
+            const mockExplanation = {
+                location: mockRecommendations[0].location,
+                roi_score: mockRecommendations[0].roi,
+                summary: `${mockRecommendations[0].location} provides the highest predicted ROI due to premium visibility and high foot traffic.`,
+                key_factors: [
+                    'Zone Type: End Cap (premium visibility)',
+                    'Traffic Level: High (250 daily visitors)',
+                    'Visibility Factor: 2.0x multiplier',
+                    `Category Fit: Perfect match for ${productData.category}`
+                ]
+            };
+
+            displayRecommendationsList(mockRecommendations, mockExplanation);
+            highlightLocationsOnPlanogram(mockRecommendations);
+        }
+
+        // Display recommendations list
+        function displayRecommendationsList(recommendations, explanation) {
+            const container = document.getElementById('recommendationsContainer');
+
+            let html = '<ul class="recommendations-list">';
+            recommendations.forEach((rec, index) => {
+                const isTop = index === 0;
+                html += `
+                    <li class="recommendation-item ${isTop ? 'top' : ''}">
+                        <div class="location-name">
+                            ${isTop ? '🏆 ' : `${index + 1}. `}${rec.location}
+                        </div>
+                        <div class="roi-score">ROI: ${rec.roi.toFixed(2)}x</div>
+                        <div style="font-size: 0.9em; color: #6c757d; margin-top: 5px;">
+                            ${((rec.roi - 1) * 100).toFixed(0)}% return on investment
+                        </div>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+
+            // Add explanation if available
+            if (explanation) {
+                html += `
+                    <div class="explanation">
+                        <h3>💡 Why This Location?</h3>
+                        <p>${explanation.summary || 'Top placement based on ROI analysis'}</p>
+                        ${explanation.key_factors ? `
+                            <div style="margin-top: 15px;">
+                                ${explanation.key_factors.map(factor => `
+                                    <div class="metric">
+                                        <span class="metric-label">${factor.split(':')[0]}</span>
+                                        <span class="metric-value">${factor.split(':')[1]}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // Highlight locations on planogram
+        function highlightLocationsOnPlanogram(recommendations) {
+            // Reset all shelves
+            document.querySelectorAll('.shelf-location').forEach(shelf => {
+                shelf.className = 'shelf-location';
+                const existingBadge = shelf.querySelector('.roi-badge');
+                if (existingBadge) existingBadge.remove();
+            });
+
+            // Highlight recommended shelves
+            recommendations.forEach((rec, index) => {
+                const location = storeLocations.find(loc =>
+                    rec.location.includes(loc.name.split(' - ')[0])
+                );
+
+                if (location) {
+                    const shelfDiv = document.getElementById(location.id);
+                    if (shelfDiv) {
+                        if (index === 0) {
+                            shelfDiv.classList.add('top-recommendation');
+                        } else {
+                            shelfDiv.classList.add('recommended');
+                        }
+
+                        const badge = document.createElement('div');
+                        badge.className = 'roi-badge';
+                        badge.textContent = `ROI ${rec.roi.toFixed(2)}x`;
+                        shelfDiv.appendChild(badge);
+                    }
+                }
+            });
+        }
+
+        // Initialize on load
+        initializePlanogram();
+
+        // Auto-submit form for demo
+        setTimeout(() => {
+            document.getElementById('productForm').dispatchEvent(new Event('submit'));
+        }, 1000);
+    </script>
+</body>
+</html>
