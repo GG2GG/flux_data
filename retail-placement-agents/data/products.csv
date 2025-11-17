@@ -1,0 +1,5 @@
+id,sku,name,category,price,cost,margin_pct,notes
+1,PK-SN-001,Crunchy Chips,snacks,40,15,62.5,Popular salty snack
+2,PK-DR-001,Fresh Cola,beverages,50,20,60,Carbonated drink
+3,PK-CH-002,Protein Chocolate,snacks,80,30,62.5,High demand premium snack
+4,PK-JC-003,Orange Juice,beverages,90,35,61.1,Healthy beverage option

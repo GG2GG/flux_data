@@ -1,0 +1,6 @@
+{
+  "S1": {"expected_daily_units": 32, "expected_daily_profit": 800, "expected_30d_profit": 24000, "roi_30d": 5.2},
+  "S2": {"expected_daily_units": 21, "expected_daily_profit": 520, "expected_30d_profit": 15600, "roi_30d": 3.3},
+  "S3": {"expected_daily_units": 12, "expected_daily_profit": 220, "expected_30d_profit": 6600, "roi_30d": 1.4},
+  "S4": {"expected_daily_units": 36, "expected_daily_profit": 900, "expected_30d_profit": 27000, "roi_30d": 6.0}
+}
