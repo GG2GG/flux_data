@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Placement Optimizer - Planogram View</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 320px 1fr 380px;
+            gap: 15px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 8px;
+            font-size: 1.3em;
+        }
+
+        /* Product Form */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 9px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Planogram Panel */
+        #planogramPanel {
+            position: relative;
+            min-height: 550px;
+        }
+
+        #planogramPanel p {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        #store-map {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            border-radius: 10px;
+            border: 3px solid #cbd5e1;
+            overflow: auto;
+            /* Ensure content is scrollable */
+            min-width: 320px;
+        }
+
+        /* Inner wrapper for planogram content */
+        .planogram-wrapper {
+            position: relative;
+            min-width: 750px; /* Ensure all shelves are visible */
+            min-height: 500px;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Store section labels */
+        .store-label {
+            position: absolute;
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* Shelf Locations */
+        .shelf-location {
+            position: absolute;
+            background: white;
+            border: 3px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .shelf-location:hover {
+            transform: scale(1.08);
+            z-index: 10;
+            border-color: #667eea;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .shelf-location.selected {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            border-width: 4px;
+            box-shadow: 0 0 25px rgba(33, 150, 243, 0.6);
+            z-index: 15;
+        }
+
+        .shelf-location.top-recommendation {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-color: #ff9800;
+            border-width: 4px;
+            animation: pulse 2s infinite;
+            z-index: 12;
+            color: #d84315;
+        }
+
+        .shelf-location.recommended {
+            background: linear-gradient(135deg, #81c784 0%, #66bb6a 100%);
+            border-color: #4caf50;
+            border-width: 3px;
+            z-index: 11;
+            color: #1b5e20;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            }
+            50% {
+                box-shadow: 0 0 35px rgba(255, 215, 0, 1);
+            }
+        }
+
+        .roi-badge {
+            margin-top: 6px;
+            padding: 4px 10px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .shelf-location.top-recommendation .roi-badge {
+            background: #d84315;
+        }
+
+        .shelf-location.recommended .roi-badge {
+            background: #2e7d32;
+        }
+
+        .zone-label {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 3px;
+        }
+
+        /* Recommendations Panel */
+        .recommendations-list {
+            list-style: none;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .recommendation-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .recommendation-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .recommendation-item.top {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe6cc 100%);
+            border-left-color: #ff9800;
+        }
+
+        .recommendation-item .location-name {
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .recommendation-item .roi-score {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .recommendation-item .zone-type {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Chat Section */
+        .chat-section {
+            margin-top: 15px;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 15px;
+        }
+
+        .chat-section h3 {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        #selectedLocationInfo {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1976d2;
+        }
+
+        #chatMessages {
+            height: 250px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .chat-message {
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            max-width: 90%;
+        }
+
+        .chat-message.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+        }
+
+        .chat-message.assistant {
+            background: white;
+            border: 2px solid #e0e0e0;
+            color: #333;
+        }
+
+        .message-sender {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        #chatInput {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        #chatInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .empty-message {
+            color: #999;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1600px) {
+            .main-content {
+                grid-template-columns: 300px 1fr 350px;
+            }
+        }
+
+        @media (max-width: 1400px) {
+            .main-content {
+                grid-template-columns: 280px 1fr 320px;
+            }
+
+            #store-map {
+                height: 450px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            #planogramPanel {
+                order: 2;
+            }
+
+            #store-map {
+                height: 400px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .panel {
+                padding: 15px;
+            }
+
+            #store-map {
+                height: 350px;
+            }
+
+            .chat-section {
+                display: none; /* Hide chat on mobile for simplicity */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 Retail Placement Optimizer</h1>
+            <p>AI-Powered Product Placement Analysis with Interactive Planogram</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Panel: Product Form -->
+            <div class="panel">
+                <h2>📦 Product Details</h2>
+                <form id="productForm">
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <input type="text" id="productName" value="Premium Energy Drink" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="Beverages" selected>Beverages</option>
+                            <option value="Snacks">Snacks</option>
+                            <option value="Dairy">Dairy</option>
+                            <option value="Bakery">Bakery</option>
+                            <option value="Personal Care">Personal Care</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Price ($)</label>
+                        <input type="number" id="price" value="2.99" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="budget">Budget ($)</label>
+                        <input type="number" id="budget" value="5000" step="100" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetSales">Target Sales (units)</label>
+                        <input type="number" id="targetSales" value="1000" step="10" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetCustomers">Target Customers</label>
+                        <input type="text" id="targetCustomers" value="Young adults 18-35" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expectedROI">Expected ROI</label>
+                        <input type="number" id="expectedROI" value="1.5" step="0.1" min="0" required>
+                    </div>
+
+                    <button type="submit" class="analyze-btn">🎯 Analyze Placement</button>
+                </form>
+            </div>
+
+            <!-- Middle Panel: Store Planogram -->
+            <div class="panel" id="planogramPanel">
+                <h2>🗺️ Store Planogram</h2>
+                <p>Click on any location to view details and chat about placement strategy</p>
+                <div id="store-map"></div>
+            </div>
+
+            <!-- Right Panel: Recommendations & Chat -->
+            <div class="panel">
+                <h2>📊 Recommendations</h2>
+                <div id="recommendationsContainer">
+                    <p class="empty-message">Submit product details to see recommendations</p>
+                </div>
+
+                <!-- Chat Section -->
+                <div class="chat-section" id="chatSection" style="display: none;">
+                    <h3>💬 Location Insights Chat</h3>
+                    <div id="selectedLocationInfo"></div>
+                    <div id="chatMessages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chatInput" placeholder="Ask about this location..." />
+                        <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        let currentRecommendations = [];
+        let currentSessionId = null;
+        let selectedLocation = null;
+        let chatHistory = []; // Track conversation history
+
+        // Store location definitions - Arranged like a real store layout
+        const storeLocationMap = {
+            // Front of store - Entrance area (bottom)
+            'Main Entrance Display': { id: 'L001', x: 280, y: 400, width: 180, height: 80, zone: 'Entrance' },
+
+            // Checkout lanes (near entrance)
+            'Checkout Lane 1': { id: 'L002', x: 50, y: 400, width: 100, height: 80, zone: 'Checkout' },
+            'Checkout Lane 2': { id: 'L003', x: 480, y: 400, width: 100, height: 80, zone: 'Checkout' },
+            'Checkout Lane 3': { id: 'L004', x: 600, y: 400, width: 100, height: 80, zone: 'Checkout' },
+
+            // Middle section - Main aisles (eye level)
+            'Beverages Aisle - Eye Level': { id: 'L005', x: 50, y: 250, width: 180, height: 120, zone: 'Eye Level' },
+            'Snacks Aisle - Eye Level': { id: 'L006', x: 260, y: 250, width: 180, height: 120, zone: 'Eye Level' },
+            'Dairy Aisle - Eye Level': { id: 'L007', x: 470, y: 250, width: 180, height: 120, zone: 'Eye Level' },
+
+            // Back of store - Endcaps and specialty areas
+            'Beverages End Cap': { id: 'L008', x: 50, y: 30, width: 140, height: 180, zone: 'End Cap' },
+            'Snacks End Cap': { id: 'L009', x: 300, y: 30, width: 140, height: 180, zone: 'End Cap' },
+            'Bakery Section': { id: 'L010', x: 550, y: 30, width: 150, height: 180, zone: 'Specialty' }
+        };
+
+        // Initialize planogram with locations
+        function initializePlanogram() {
+            const map = document.getElementById('store-map');
+            map.innerHTML = '';
+
+            // Create wrapper div to ensure proper scrolling
+            const wrapper = document.createElement('div');
+            wrapper.className = 'planogram-wrapper';
+
+            // Add grid background
+            const grid = document.createElement('div');
+            grid.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-image:
+                    repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(0,0,0,0.03) 49px, rgba(0,0,0,0.03) 50px),
+                    repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(0,0,0,0.03) 49px, rgba(0,0,0,0.03) 50px);
+                pointer-events: none;
+            `;
+            wrapper.appendChild(grid);
+
+            // Add store section labels
+            const labels = [
+                { text: '← BACK OF STORE', x: 350, y: 10, style: 'text-align: center;' },
+                { text: '← MAIN AISLES', x: 350, y: 230, style: 'text-align: center;' },
+                { text: '🚪 ENTRANCE →', x: 160, y: 485, style: 'font-size: 13px; color: #10b981;' }
+            ];
+
+            labels.forEach(label => {
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'store-label';
+                labelDiv.style.left = label.x + 'px';
+                labelDiv.style.top = label.y + 'px';
+                labelDiv.style.cssText += label.style;
+                labelDiv.textContent = label.text;
+                wrapper.appendChild(labelDiv);
+            });
+
+            // Add shelf locations
+            Object.entries(storeLocationMap).forEach(([key, loc]) => {
+                const shelf = document.createElement('div');
+                shelf.className = 'shelf-location';
+                shelf.id = loc.id;
+                shelf.style.left = loc.x + 'px';
+                shelf.style.top = loc.y + 'px';
+                shelf.style.width = loc.width + 'px';
+                shelf.style.height = loc.height + 'px';
+
+                shelf.innerHTML = `
+                    <div>${key}</div>
+                    <div class="zone-label">${loc.zone}</div>
+                    <div class="roi-badge">--</div>
+                `;
+
+                shelf.dataset.location = key;
+                shelf.dataset.zone = loc.zone;
+                shelf.onclick = () => selectLocation(key, loc);
+
+                wrapper.appendChild(shelf);
+            });
+
+            map.appendChild(wrapper);
+        }
+
+        // Handle form submission
+        document.getElementById('productForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const productData = {
+                product_name: document.getElementById('productName').value,
+                category: document.getElementById('category').value,
+                price: parseFloat(document.getElementById('price').value),
+                budget: parseFloat(document.getElementById('budget').value),
+                target_sales: parseInt(document.getElementById('targetSales').value),
+                target_customers: document.getElementById('targetCustomers').value,
+                expected_roi: parseFloat(document.getElementById('expectedROI').value)
+            };
+
+            document.getElementById('recommendationsContainer').innerHTML = '<div class="loading">🤖 Analyzing placements...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(productData)
+                });
+
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const data = await response.json();
+                currentSessionId = data.session_id;
+
+                // Transform recommendations
+                currentRecommendations = Object.entries(data.recommendations || {})
+                    .map(([location, roi]) => ({ location, roi }))
+                    .sort((a, b) => b.roi - a.roi);
+
+                displayRecommendationsList(currentRecommendations);
+                highlightLocationsOnPlanogram(currentRecommendations);
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('recommendationsContainer').innerHTML =
+                    `<p style="color: #d32f2f; padding: 20px; text-align: center;">
+                        ❌ Error: ${error.message}<br>
+                        <small>Make sure the API server is running on port 8000</small>
+                    </p>`;
+            }
+        });
+
+        // Display recommendations list
+        function displayRecommendationsList(recommendations) {
+            if (recommendations.length === 0) {
+                document.getElementById('recommendationsContainer').innerHTML =
+                    '<p class="empty-message">No suitable locations found within budget</p>';
+                return;
+            }
+
+            let html = '<ul class="recommendations-list">';
+            recommendations.forEach((rec, index) => {
+                const isTop = index === 0;
+                html += `
+                    <li class="recommendation-item ${isTop ? 'top' : ''}" onclick="scrollToLocation('${rec.location}')">
+                        <div class="location-name">${rec.location} ${isTop ? '🏆' : ''}</div>
+                        <div class="roi-score">ROI: ${rec.roi.toFixed(2)}x</div>
+                        <div class="zone-type">${storeLocationMap[rec.location]?.zone || 'Standard'}</div>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+
+            document.getElementById('recommendationsContainer').innerHTML = html;
+        }
+
+        // Highlight locations on planogram
+        function highlightLocationsOnPlanogram(recommendations) {
+            // Clear previous highlights
+            document.querySelectorAll('.shelf-location').forEach(shelf => {
+                shelf.classList.remove('top-recommendation', 'recommended');
+                const badge = shelf.querySelector('.roi-badge');
+                badge.textContent = '--';
+            });
+
+            // Apply new highlights
+            recommendations.forEach((rec, index) => {
+                const shelf = document.querySelector(`[data-location="${rec.location}"]`);
+                if (shelf) {
+                    if (index === 0) {
+                        shelf.classList.add('top-recommendation');
+                    } else if (index < 5) {
+                        shelf.classList.add('recommended');
+                    }
+
+                    const badge = shelf.querySelector('.roi-badge');
+                    badge.textContent = `${rec.roi.toFixed(2)}x`;
+                }
+            });
+        }
+
+        // Select location
+        function selectLocation(locationName, locationData) {
+            selectedLocation = locationName;
+
+            // Reset chat history for new location
+            chatHistory = [];
+
+            // Update visual selection
+            document.querySelectorAll('.shelf-location').forEach(s => s.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+
+            // Show chat section
+            document.getElementById('chatSection').style.display = 'block';
+            document.getElementById('selectedLocationInfo').textContent = `Selected: ${locationName}`;
+
+            // Clear chat
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="chat-message assistant">
+                    <div class="message-sender">AI Consultant</div>
+                    <div>You've selected ${locationName}. Ask me anything about this placement!</div>
+                </div>
+            `;
+        }
+
+        // Scroll to location on planogram
+        function scrollToLocation(locationName) {
+            const shelf = document.querySelector(`[data-location="${locationName}"]`);
+            if (shelf) {
+                shelf.click();
+                shelf.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // Send chat message
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message || !currentSessionId) return;
+
+            addChatMessage('user', message);
+            input.value = '';
+
+            // Add loading indicator
+            const loadingMsg = addChatMessage('assistant', '💭 Thinking...');
+
+            // Build conversation history context
+            let historyContext = '';
+            if (chatHistory.length > 0) {
+                historyContext = '\n\nPrevious conversation:\n';
+                chatHistory.slice(-3).forEach(exchange => { // Last 3 exchanges for context
+                    historyContext += `Q: ${exchange.question}\nA: ${exchange.answer}\n`;
+                });
+                historyContext += '\nIMPORTANT: Provide a NEW, VARIED response that builds on the conversation above. Do NOT repeat the same template or answer. Address the NEW question with FRESH insights.\n';
+            }
+
+            const contextualQuestion = `Regarding ${selectedLocation}: ${message}.${historyContext} Please provide a concise, specific answer in 2-3 sentences with actionable insights.`;
+
+            try {
+                const response = await fetch(`${API_URL}/defend`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        question: contextualQuestion
+                    })
+                });
+
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const data = await response.json();
+                let answer = data.answer || 'Sorry, no response generated.';
+
+                // Summarize if response is too long (>300 chars)
+                if (answer.length > 300) {
+                    answer = summarizeResponse(answer);
+                }
+
+                // Save to history
+                chatHistory.push({
+                    question: message,
+                    answer: answer
+                });
+
+                // Remove loading indicator
+                loadingMsg.remove();
+
+                // Add actual response
+                addChatMessage('assistant', answer);
+
+            } catch (error) {
+                console.error('Chat error:', error);
+                loadingMsg.remove();
+                addChatMessage('assistant', '❌ Error sending message. Please try again.');
+            }
+        }
+
+        // Summarize long responses
+        function summarizeResponse(text) {
+            // Remove markdown formatting
+            text = text.replace(/[*_~`#]/g, '');
+
+            // Extract first 2-3 sentences or first 280 characters
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            if (sentences.length <= 3) {
+                return text.substring(0, 300) + (text.length > 300 ? '...' : '');
+            }
+
+            // Take first 2 sentences
+            return sentences.slice(0, 2).join('. ') + '.';
+        }
+
+        // Add chat message
+        function addChatMessage(sender, text) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            messageDiv.innerHTML = `
+                <div class="message-sender">${sender === 'user' ? 'You' : 'AI Consultant'}</div>
+                <div>${text}</div>
+            `;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            return messageDiv; // Return for later removal if needed
+        }
+
+        // Allow Enter key to send message
+        document.getElementById('chatInput')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Initialize planogram on load
+        initializePlanogram();
+    </script>
+</body>
+</html>
