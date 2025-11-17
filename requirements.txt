@@ -2,12 +2,17 @@
 fastapi>=0.121.2
 uvicorn>=0.38.0
 pydantic>=2.12.4
+python-dotenv>=1.0.0  # Load .env configuration files
 
-# LLM Integration (OpenAI compatible)
-openai>=1.0.0
+# LLM Integration
+openai>=1.0.0  # OpenAI and OpenRouter
+google-generativeai>=0.3.0  # Google Gemini API
 
 # Data Processing
 numpy>=1.24.0
+
+# Knowledge Graph
+networkx>=3.0  # For building and querying knowledge graphs
 
 # Optional: For enhanced CLI (coming soon)
 # rich>=13.0.0

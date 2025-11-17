@@ -1,0 +1,2450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Placement Optimizer - Realistic Store View</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'SF Pro Display', -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            animation: fadeIn 0.8s ease-out;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 800;
+            margin-bottom: 5px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr 380px;
+            gap: 20px;
+            padding: 0 20px 20px 20px;
+            flex: 1;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        @media (max-width: 1400px) {
+            .main-grid {
+                grid-template-columns: 280px 1fr 340px;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+                overflow-y: auto;
+            }
+        }
+
+        /* Panels */
+        .panel {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.6s ease-out;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .panel h2 {
+            color: #1e293b;
+            font-size: 1.3em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .panel > p {
+            flex-shrink: 0;
+        }
+
+        /* Product Form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.95em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .analyze-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Store Canvas */
+        #storePanel {
+            position: relative;
+            overflow: hidden;
+        }
+
+        #store-canvas {
+            width: 100%;
+            height: 100%;
+            background:
+                linear-gradient(180deg, #E8E8E0 0%, #D8D8C8 100%);
+            border-radius: 15px;
+            position: relative;
+            overflow: auto;
+            border: 4px solid #5D4E37;
+            box-shadow:
+                inset 0 0 50px rgba(0, 0, 0, 0.1),
+                0 4px 20px rgba(0, 0, 0, 0.2);
+            flex: 1;
+        }
+
+        /* Store Grid Lines */
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(148, 163, 184, 0.1) 49px, rgba(148, 163, 184, 0.1) 50px),
+                repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(148, 163, 184, 0.1) 49px, rgba(148, 163, 184, 0.1) 50px);
+            pointer-events: none;
+        }
+
+        /* Entrance */
+        .store-entrance {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 50px;
+            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 -4px 15px rgba(16, 185, 129, 0.3);
+            z-index: 200;
+        }
+
+        /* Checkout Area - Professional Planogram Style */
+        .checkout-area {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 50px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            z-index: 150;
+        }
+
+        .checkout-counter {
+            width: 100px;
+            height: 50px;
+            background: linear-gradient(135deg, #3B3B3B 0%, #2A2A2A 100%);
+            border: 3px solid #1A1A1A;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: #E0E0E0;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .checkout-counter::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 3px;
+            background: #4CAF50;
+        }
+
+        .checkout-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        /* Walking Paths / Alleys */
+        .walking-path {
+            position: absolute;
+            background: repeating-linear-gradient(
+                90deg,
+                #e2e8f0 0px,
+                #e2e8f0 15px,
+                #cbd5e1 15px,
+                #cbd5e1 30px
+            );
+            border-top: 2px dashed #94a3b8;
+            border-bottom: 2px dashed #94a3b8;
+            opacity: 0.7;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* Planogram Shelf Units (Realistic) */
+        .aisle-row {
+            position: absolute;
+            background: #8B7355;
+            border: 2px solid #5D4E37;
+            display: flex;
+            align-items: stretch;
+            justify-content: flex-start;
+            padding: 0;
+            transition: all 0.2s;
+            z-index: 10;
+            box-shadow:
+                0 2px 0 #6B5745,
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            overflow: visible;
+        }
+
+        .aisle-row::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: #5D4E37;
+        }
+
+        .aisle-row::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: #5D4E37;
+        }
+
+        .aisle-row:hover {
+            transform: scale(1.02);
+            box-shadow:
+                0 2px 0 #6B5745,
+                0 6px 20px rgba(99, 102, 241, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: #6366f1;
+            z-index: 100;
+        }
+
+        .aisle-row.top-pick {
+            border-color: #eab308;
+            border-width: 3px;
+            box-shadow:
+                0 2px 0 #d97706,
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                0 0 0 3px rgba(234, 179, 8, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            animation: pulse-shelf 2s infinite;
+            z-index: 105;
+        }
+
+        @keyframes pulse-shelf {
+            0%, 100% { box-shadow: 0 2px 0 #d97706, 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(234, 179, 8, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+            50% { box-shadow: 0 2px 0 #d97706, 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 6px rgba(234, 179, 8, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+        }
+
+        .aisle-row.recommended {
+            border-color: #10b981;
+            box-shadow:
+                0 2px 0 #059669,
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                0 0 0 2px rgba(16, 185, 129, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            z-index: 102;
+        }
+
+        .aisle-row.selected {
+            transform: scale(1.05);
+            border-color: #3b82f6;
+            box-shadow:
+                0 2px 0 #2563eb,
+                0 8px 30px rgba(59, 130, 246, 0.6),
+                0 0 0 4px rgba(59, 130, 246, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            z-index: 110;
+            animation: pulseSelected 1s ease-in-out 2;
+        }
+
+        @keyframes pulseSelected {
+            0%, 100% {
+                box-shadow: 0 2px 0 #2563eb, 0 8px 30px rgba(59, 130, 246, 0.6), 0 0 0 4px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            }
+            50% {
+                box-shadow: 0 2px 0 #2563eb, 0 8px 30px rgba(59, 130, 246, 0.6), 0 0 0 8px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        /* Product shelving area */
+        .aisle-products {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 40px);
+            gap: 2px;
+            padding: 4px;
+            background: linear-gradient(180deg, #F5F5DC 0%, #E8E8D0 100%);
+        }
+
+        .product-box {
+            width: 40px;
+            height: 100%;
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Aisle label centered */
+        .aisle-center-label {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 41, 59, 0.90);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 50;
+        }
+
+        .aisle-center-label .icon {
+            font-size: 18px;
+        }
+
+        /* ROI badge */
+        .roi-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #6366f1;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .aisle-row:hover .roi-badge,
+        .aisle-row.top-pick .roi-badge,
+        .aisle-row.recommended .roi-badge {
+            opacity: 1;
+        }
+
+        .aisle-row.top-pick .roi-badge {
+            background: #eab308;
+            color: #713f12;
+        }
+
+        .aisle-row.recommended .roi-badge {
+            background: #10b981;
+            color: white;
+        }
+
+        /* Location/Shelf */
+        .location {
+            position: absolute;
+            background: white;
+            border: 3px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .location:hover {
+            transform: scale(1.05) translateY(-2px);
+            z-index: 100;
+            border-color: #6366f1;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .location.selected {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-color: #3b82f6;
+            border-width: 4px;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+            z-index: 110;
+            transform: scale(1.08);
+        }
+
+        .location.top-pick {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde047 100%);
+            border-color: #eab308;
+            border-width: 4px;
+            animation: pulse-gold 2s infinite;
+            z-index: 105;
+            color: #713f12;
+            box-shadow: 0 0 40px rgba(234, 179, 8, 0.6);
+        }
+
+        .location.recommended {
+            background: linear-gradient(135deg, #d1fae5 0%, #86efac 100%);
+            border-color: #10b981;
+            border-width: 3px;
+            z-index: 102;
+            color: #064e3b;
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% {
+                box-shadow: 0 0 40px rgba(234, 179, 8, 0.6);
+            }
+            50% {
+                box-shadow: 0 0 60px rgba(234, 179, 8, 0.9);
+            }
+        }
+
+        .location-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .location-name {
+            font-size: 12px;
+            line-height: 1.3;
+            margin-bottom: 5px;
+        }
+
+        .roi-badge {
+            margin-top: 8px;
+            padding: 4px 10px;
+            background: rgba(99, 102, 241, 0.9);
+            color: white;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+
+        .location.top-pick .roi-badge {
+            background: #92400e;
+        }
+
+        .location.recommended .roi-badge {
+            background: #065f46;
+        }
+
+        /* Category Labels */
+        .category-label {
+            position: absolute;
+            background: rgba(148, 163, 184, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #475569;
+            border: 2px solid rgba(148, 163, 184, 0.3);
+        }
+
+        /* Recommendations Panel */
+        #recommendationsContainer {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .recommendations-list {
+            list-style: none;
+        }
+
+        .recommendation-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            border-left: 5px solid #6366f1;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .recommendation-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .recommendation-item.top {
+            background: linear-gradient(135deg, #fef9c3 0%, #fde047 100%);
+            border-left-color: #eab308;
+        }
+
+        .rec-location-name {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 6px;
+            color: #1e293b;
+        }
+
+        .rec-roi-score {
+            color: #6366f1;
+            font-weight: 700;
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .rec-details {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        /* Chat Section */
+        .chat-section {
+            margin-top: 20px;
+            border-top: 3px solid #e2e8f0;
+            padding-top: 20px;
+            flex-shrink: 0;
+        }
+
+        .chat-section h3 {
+            color: #1e293b;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+
+        #chatMessages {
+            height: 250px;
+            overflow-y: auto;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 88%;
+            animation: messageSlideIn 0.3s ease-out;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-message.user {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+
+        .chat-message.assistant {
+            background: white;
+            border: 2px solid #e2e8f0;
+            color: #1e293b;
+        }
+
+        .message-sender {
+            font-weight: 700;
+            font-size: 11px;
+            margin-bottom: 6px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 12px;
+        }
+
+        #chatInput {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        #chatInput:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .send-btn {
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .location-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 5px solid #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .location-info h4 {
+            color: #1e40af;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            font-weight: 700;
+        }
+
+        .info-item {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #1e40af;
+        }
+
+        .info-item strong {
+            font-weight: 700;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 25px;
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #6366f1;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 12px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+
+        /* Responsive */
+        @media (max-width: 1600px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #store-canvas {
+                height: 500px;
+            }
+
+            .chat-popup {
+                width: 90vw;
+                max-height: 85vh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .chat-popup {
+                width: 95vw;
+                max-height: 90vh;
+            }
+
+            .chat-popup-header {
+                padding: 15px 20px;
+            }
+
+            .chat-popup-body {
+                padding: 15px 20px;
+            }
+        }
+
+        /* Chat Popup Modal */
+        .chat-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9998;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .chat-modal-overlay.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .chat-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            max-width: 90vw;
+            max-height: 80vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            flex-direction: column;
+        }
+
+        .chat-popup.active {
+            display: flex;
+            animation: popupSlideIn 0.3s ease-out;
+        }
+
+        @keyframes popupSlideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -45%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .chat-popup-header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+        }
+
+        .chat-popup-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-popup-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            position: relative;
+            z-index: 10;
+        }
+
+        .chat-popup-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .chat-popup-body {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 25px;
+        }
+
+        .chat-popup-location-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 5px solid #3b82f6;
+        }
+
+        .chat-popup-location-info h4 {
+            color: #1e40af;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+            font-weight: 700;
+        }
+
+        .chat-popup-messages {
+            flex: 1;
+            overflow-y: auto;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e2e8f0;
+            min-height: 300px;
+            max-height: 400px;
+        }
+
+        .chat-popup-input-container {
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-popup-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .chat-popup-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .chat-popup-send-btn {
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .chat-popup-send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .chat-popup-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Aisle Dialog */
+        .aisle-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            z-index: 10000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .aisle-modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .aisle-dialog {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 1400px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: row;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+            animation: aisleSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+        }
+
+        @keyframes aisleSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.85);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .aisle-left-section {
+            width: 55%;
+            padding: 40px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-right: 3px solid #cbd5e1;
+            overflow-y: auto;
+        }
+
+        .aisle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .aisle-title {
+            font-size: 2em;
+            font-weight: 800;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .aisle-close-btn {
+            background: #ef4444;
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .aisle-close-btn:hover {
+            background: #dc2626;
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .aisle-location-details {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            border-left: 5px solid #6366f1;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .aisle-location-details h3 {
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .detail-item {
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .detail-item strong {
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .aisle-rows-section {
+            margin-top: 20px;
+        }
+
+        .aisle-rows-section h3 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .row-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .row-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 25px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 3px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .row-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            transition: width 0.3s;
+        }
+
+        .row-card:hover {
+            transform: translateX(8px) scale(1.02);
+            border-color: #6366f1;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .row-card:hover::before {
+            width: 100%;
+            opacity: 0.1;
+        }
+
+        .row-card.optimal {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        }
+
+        .row-card.optimal::before {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .row-card.poor {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        }
+
+        .row-card.poor::before {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .row-info {
+            flex: 1;
+        }
+
+        .row-name {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .row-height {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .row-description {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .row-roi {
+            text-align: right;
+            padding-left: 20px;
+        }
+
+        .roi-value {
+            font-size: 2em;
+            font-weight: 800;
+            color: #6366f1;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .row-card.optimal .roi-value {
+            color: #10b981;
+        }
+
+        .row-card.poor .roi-value {
+            color: #f59e0b;
+        }
+
+        .roi-label {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .row-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .row-card.optimal .row-badge {
+            background: #10b981;
+            color: white;
+        }
+
+        .row-card.poor .row-badge {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .aisle-right-section {
+            width: 45%;
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc;
+        }
+
+        .metrics-panel {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .metrics-panel.active {
+            display: block;
+        }
+
+        .metrics-header {
+            margin-bottom: 25px;
+        }
+
+        .metrics-header h3 {
+            color: #1e293b;
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .metrics-subtitle {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            border-left: 5px solid #6366f1;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .metric-description {
+            font-size: 13px;
+            color: #475569;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .chat-in-metrics {
+            border-top: 3px solid #e2e8f0;
+            padding: 25px 40px;
+            background: white;
+        }
+
+        .chat-in-metrics h4 {
+            color: #1e293b;
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .chat-in-metrics-messages {
+            height: 250px;
+            overflow-y: auto;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            color: #94a3b8;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .empty-state-subtext {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>🏪 Retail Placement Optimizer</h1>
+            <p>AI-Powered Store Layout Analysis & Interactive Consultation</p>
+        </div>
+
+        <div class="main-grid">
+            <!-- Left: Product Form -->
+            <div class="panel">
+                <h2>📦 Product Details</h2>
+                <form id="productForm">
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <input type="text" id="productName" value="Premium Energy Drink" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="Beverages" selected>Beverages</option>
+                            <option value="Snacks">Snacks</option>
+                            <option value="Dairy">Dairy</option>
+                            <option value="Bakery">Bakery</option>
+                            <option value="Personal Care">Personal Care</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Price ($)</label>
+                        <input type="number" id="price" value="2.99" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="budget">Budget ($)</label>
+                        <input type="number" id="budget" value="5000" step="100" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetSales">Target Sales (units)</label>
+                        <input type="number" id="targetSales" value="1000" step="10" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetCustomers">Target Customers</label>
+                        <input type="text" id="targetCustomers" value="Young adults 18-35" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expectedROI">Expected ROI</label>
+                        <input type="number" id="expectedROI" value="1.5" step="0.1" min="0" required>
+                    </div>
+
+                    <button type="submit" class="analyze-btn">🎯 Analyze Placement</button>
+                </form>
+            </div>
+
+            <!-- Middle: Store Planogram -->
+            <div class="panel" id="storePanel">
+                <h2>🗺️ Store Layout</h2>
+                <p style="margin-bottom: 15px; color: #64748b; font-size: 14px;">Click any aisle to explore placement options and chat with AI</p>
+                <div id="store-canvas">
+                    <!-- Store layout will be dynamically rendered here -->
+                </div>
+            </div>
+
+            <!-- Right: Recommendations & Chat -->
+            <div class="panel">
+                <h2>📊 AI Recommendations</h2>
+                <div id="recommendationsContainer">
+                    <p style="color: #94a3b8; text-align: center; padding: 50px 20px; font-weight: 500;">
+                        Submit product details to receive AI-powered recommendations
+                    </p>
+                </div>
+
+                <!-- Chat Section -->
+                <div class="chat-section" id="chatSection" style="display: none;">
+                    <h3>💬 AI Consultant</h3>
+                    <div id="selectedLocationInfo"></div>
+                    <div id="chatMessages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chatInput" placeholder="Ask me anything about this location..." />
+                        <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aisle Dialog -->
+    <div class="aisle-modal-overlay" id="aisleModalOverlay">
+        <div class="aisle-dialog">
+            <div class="aisle-left-section">
+                <div class="aisle-header">
+                    <div class="aisle-title" id="aisleTitle">
+                        <span>🏪</span>
+                        <span>Aisle View</span>
+                    </div>
+                    <button class="aisle-close-btn" id="closeAisleBtn">✕</button>
+                </div>
+
+                <div class="aisle-location-details" id="aisleLocationDetails">
+                    <h3>Location Details</h3>
+                    <div class="detail-grid" id="aisleDetailsGrid">
+                        <!-- Details populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="aisle-rows-section">
+                    <h3>📊 Shelf Rows & ROI</h3>
+                    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+                        Click any row to see detailed metrics and chat with AI
+                    </p>
+                    <div class="row-list" id="rowList">
+                        <!-- Rows populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="aisle-right-section">
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-state-icon">👈</div>
+                    <div class="empty-state-text">Select a Row</div>
+                    <div class="empty-state-subtext">Click any shelf row on the left to see detailed metrics and chat with AI</div>
+                </div>
+
+                <div class="metrics-panel" id="metricsPanel">
+                    <div class="metrics-header">
+                        <h3 id="metricsPanelTitle">Row Metrics</h3>
+                        <p class="metrics-subtitle" id="metricsPanelSubtitle">Detailed analysis</p>
+                    </div>
+                    <div id="metricsCards">
+                        <!-- Metric cards populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="chat-in-metrics" id="chatInMetrics" style="display: none;">
+                    <h4>💬 Ask AI About This Row</h4>
+                    <div class="chat-in-metrics-messages" id="chatInMetricsMessages">
+                        <div class="chat-message assistant">
+                            <div class="message-sender">AI Consultant</div>
+                            <div>Hi! Ask me anything about this shelf row placement and ROI optimization.</div>
+                        </div>
+                    </div>
+                    <div class="chat-popup-input-container">
+                        <input type="text" class="chat-popup-input" id="chatInMetricsInput" placeholder="Ask about this row..." />
+                        <button class="chat-popup-send-btn" id="chatInMetricsSendBtn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Popup Modal -->
+    <div class="chat-modal-overlay" id="chatModalOverlay"></div>
+    <div class="chat-popup" id="chatPopup">
+        <div class="chat-popup-header" id="chatPopupHeader">
+            <div class="chat-popup-title">
+                <span>💬</span>
+                <span>AI Consultant</span>
+            </div>
+            <button class="chat-popup-close" id="closeChatBtn">✕</button>
+        </div>
+        <div class="chat-popup-body">
+            <div class="chat-popup-location-info" id="chatPopupLocationInfo"></div>
+            <div class="chat-popup-messages" id="chatPopupMessages"></div>
+            <div class="chat-popup-input-container">
+                <input type="text" class="chat-popup-input" id="chatPopupInput" placeholder="Ask me anything about this location..." />
+                <button class="chat-popup-send-btn" id="chatPopupSendBtn" onclick="sendPopupMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        let currentRecommendations = [];
+        let currentSessionId = null;
+        let selectedLocation = null;
+        let selectedRow = null;
+        let storeLocations = [];
+        let aisleRowsData = null;
+        let chatHistory = []; // Track conversation history for context
+
+        // Category icons
+        const categoryIcons = {
+            'Beverages': '🥤',
+            'Snacks': '🍿',
+            'Dairy': '🥛',
+            'Bakery': '🍞',
+            'Personal Care': '🧴',
+            'End Cap': '⭐',
+            'Checkout': '🛒',
+            'Main Entrance': '🚪'
+        };
+
+        // Load aisle rows structure
+        async function loadAisleRowsData() {
+            try {
+                console.log('📊 Loading aisle rows data...');
+                const response = await fetch('../data/aisle_rows_structure.json');
+                const data = await response.json();
+                aisleRowsData = data;
+                console.log('✅ Loaded aisle rows data:', aisleRowsData);
+            } catch (error) {
+                console.error('❌ Error loading aisle rows data:', error);
+                // Fallback: try absolute path
+                try {
+                    const response2 = await fetch('http://localhost:8000/data/aisle_rows_structure.json');
+                    const data2 = await response2.json();
+                    aisleRowsData = data2;
+                    console.log('✅ Loaded aisle rows data (fallback):', aisleRowsData);
+                } catch (error2) {
+                    console.error('❌ Error loading aisle rows data (fallback):', error2);
+                }
+            }
+        }
+
+        // Load store locations from API
+        async function loadStoreLocations() {
+            try {
+                console.log('📍 Loading store locations from API...');
+                const response = await fetch(`${API_URL}/locations`);
+                const data = await response.json();
+                console.log('✅ Received data:', data);
+                storeLocations = data.locations || data; // Handle both formats
+                console.log(`✅ Loaded ${storeLocations.length} store locations`);
+                renderStoreLayout();
+            } catch (error) {
+                console.error('❌ Error loading locations:', error);
+                alert('Failed to load store locations. Please make sure the API server is running on port 8000.');
+            }
+        }
+
+        // Render store layout
+        function renderStoreLayout() {
+            console.log('🎨 Rendering realistic supermarket layout...');
+            const canvas = document.getElementById('store-canvas');
+
+            // Clear existing content except entrance
+            const entrance = canvas.querySelector('.store-entrance');
+            canvas.innerHTML = '';
+            if (entrance) canvas.appendChild(entrance);
+
+            // Add grid lines
+            const gridLines = document.createElement('div');
+            gridLines.className = 'grid-lines';
+            canvas.appendChild(gridLines);
+
+            if (!storeLocations || storeLocations.length === 0) {
+                console.error('❌ No store locations to render!');
+                return;
+            }
+
+            console.log(`📍 Rendering ${storeLocations.length} aisle locations...`);
+
+            // Removed checkout counters per user request
+
+            // Re-add entrance
+            if (!canvas.querySelector('.store-entrance')) {
+                const newEntrance = document.createElement('div');
+                newEntrance.className = 'store-entrance';
+                newEntrance.textContent = '🚪 ENTRANCE';
+                canvas.appendChild(newEntrance);
+            }
+
+            // Create horizontal aisles with walking paths
+            const aisleHeight = 75;
+            const walkingPathHeight = 35; // Space for walking between aisles
+            const topMargin = 40;
+            const sideMargin = 50;
+            const canvasWidth = canvas.offsetWidth || 1000;
+            const aisleWidth = canvasWidth - (2 * sideMargin);
+
+            storeLocations.forEach((loc, index) => {
+                // Add walking path above each aisle (except first)
+                if (index > 0) {
+                    const walkPath = document.createElement('div');
+                    walkPath.className = 'walking-path';
+                    const walkY = topMargin + (index * (aisleHeight + walkingPathHeight)) - walkingPathHeight;
+                    walkPath.style.left = '0px';
+                    walkPath.style.top = walkY + 'px';
+                    walkPath.style.width = canvasWidth + 'px';
+                    walkPath.style.height = walkingPathHeight + 'px';
+                    canvas.appendChild(walkPath);
+                }
+
+                // Create planogram-style shelf
+                const aisleDiv = document.createElement('div');
+                aisleDiv.className = 'aisle-row';
+                aisleDiv.id = loc.location_id;
+
+                // Position horizontally with walking path spacing
+                const yPos = topMargin + (index * (aisleHeight + walkingPathHeight));
+                aisleDiv.style.left = sideMargin + 'px';
+                aisleDiv.style.top = yPos + 'px';
+                aisleDiv.style.width = aisleWidth + 'px';
+                aisleDiv.style.height = aisleHeight + 'px';
+                aisleDiv.dataset.zoneName = loc.zone_name;
+
+                const icon = categoryIcons[loc.zone_type] || categoryIcons[loc.primary_category] || '📦';
+                const categoryName = loc.primary_category.toUpperCase();
+
+                // Create product boxes (planogram style)
+                const numProducts = Math.floor(aisleWidth / 42); // 40px box + 2px gap
+                let productsHTML = '';
+                for (let i = 0; i < numProducts; i++) {
+                    productsHTML += '<div class="product-box"></div>';
+                }
+
+                aisleDiv.innerHTML = `
+                    <div class="aisle-products">
+                        ${productsHTML}
+                    </div>
+                    <div class="aisle-center-label">
+                        <div class="icon">${icon}</div>
+                        <div>${categoryName}</div>
+                    </div>
+                    <div class="roi-badge">ROI: --</div>
+                `;
+
+                aisleDiv.onclick = () => selectLocation(loc);
+                canvas.appendChild(aisleDiv);
+                console.log(`  ✅ Added shelf ${index + 1}: ${categoryName} with ${numProducts} product slots at y=${yPos}`);
+            });
+
+            // Add store layout title
+            const layoutTitle = document.createElement('div');
+            layoutTitle.style.cssText = `
+                position: absolute;
+                bottom: 15px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(255, 255, 255, 0.95);
+                padding: 8px 20px;
+                border-radius: 20px;
+                font-size: 13px;
+                font-weight: 600;
+                color: #475569;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border: 2px solid #e2e8f0;
+            `;
+            layoutTitle.textContent = '🏪 Store Floor Plan';
+            canvas.appendChild(layoutTitle);
+
+            console.log('✅ Store layout rendered successfully!');
+        }
+
+        // Handle form submission
+        document.getElementById('productForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            console.log('🎯 Form submitted! Analyzing product placement...');
+
+            const productData = {
+                product_name: document.getElementById('productName').value,
+                category: document.getElementById('category').value,
+                price: parseFloat(document.getElementById('price').value),
+                budget: parseFloat(document.getElementById('budget').value),
+                target_sales: parseInt(document.getElementById('targetSales').value),
+                target_customers: document.getElementById('targetCustomers').value,
+                expected_roi: parseFloat(document.getElementById('expectedROI').value)
+            };
+
+            console.log('📦 Product data:', productData);
+
+            document.getElementById('recommendationsContainer').innerHTML = '<div class="loading">AI is analyzing placements...</div>';
+
+            try {
+                console.log('🌐 Calling API /analyze...');
+                const response = await fetch(`${API_URL}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(productData)
+                });
+
+                console.log(`📡 API Response status: ${response.status}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ API error response:', errorText);
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('✅ Received analysis data:', data);
+
+                currentSessionId = data.session_id;
+                console.log(`🔑 Session ID: ${currentSessionId}`);
+
+                currentRecommendations = Object.entries(data.recommendations || {})
+                    .map(([location, roi]) => ({ location, roi }))
+                    .sort((a, b) => b.roi - a.roi);
+
+                console.log(`📊 Processed ${currentRecommendations.length} recommendations`);
+
+                displayRecommendations(currentRecommendations, data.explanation);
+                highlightLocations(currentRecommendations);
+
+            } catch (error) {
+                console.error('❌ Error during analysis:', error);
+                document.getElementById('recommendationsContainer').innerHTML =
+                    `<p style="color: #ef4444; padding: 25px; text-align: center; font-weight: 600;">
+                        ❌ Error: ${error.message}<br>
+                        <small style="font-weight: 400;">Ensure API server is running on port 8000</small>
+                    </p>`;
+            }
+        });
+
+        // Display recommendations
+        function displayRecommendations(recommendations, explanation) {
+            if (!recommendations.length) {
+                document.getElementById('recommendationsContainer').innerHTML =
+                    '<p style="color: #94a3b8; text-align: center; padding: 50px 20px;">No suitable locations found within budget</p>';
+                return;
+            }
+
+            let html = '<ul class="recommendations-list">';
+            recommendations.forEach((rec, index) => {
+                const isTop = index === 0;
+                const location = storeLocations.find(l => l.zone_name === rec.location);
+                const icon = location ? (categoryIcons[location.zone_type] || '📦') : '📦';
+
+                html += `
+                    <li class="recommendation-item ${isTop ? 'top' : ''}" onclick="selectLocationByName('${rec.location}')">
+                        <div class="rec-location-name">
+                            ${isTop ? '🏆 ' : `${index + 1}. `}${icon} ${rec.location}
+                        </div>
+                        <div class="rec-roi-score">ROI: ${rec.roi.toFixed(2)}x</div>
+                        <div class="rec-details">
+                            ${((rec.roi - 1) * 100).toFixed(0)}% return on investment
+                        </div>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+
+            document.getElementById('recommendationsContainer').innerHTML = html;
+        }
+
+        // Highlight locations
+        function highlightLocations(recommendations) {
+            // Reset all aisle rows to default styling
+            document.querySelectorAll('.aisle-row').forEach(aisle => {
+                aisle.className = 'aisle-row';
+            });
+
+            // Apply highlighting based on ROI rankings
+            recommendations.forEach((rec, index) => {
+                const location = storeLocations.find(l => l.zone_name === rec.location);
+                if (!location) return;
+
+                const aisleDiv = document.getElementById(location.location_id);
+                if (!aisleDiv) return;
+
+                // Add ranking classes
+                if (index === 0) {
+                    aisleDiv.classList.add('top-pick');
+                } else if (index < 5) {
+                    aisleDiv.classList.add('recommended');
+                }
+
+                // Update ROI badge
+                const roiBadge = aisleDiv.querySelector('.roi-badge');
+                if (roiBadge) {
+                    roiBadge.textContent = `ROI: ${rec.roi.toFixed(2)}x`;
+                }
+            });
+        }
+
+        // Select location
+        function selectLocation(location) {
+            selectedLocation = location;
+
+            // No need to highlight selected - just open dialog
+            // Open aisle dialog instead of chat popup
+            openAisleDialog(location);
+        }
+
+        // Select location by name (from recommendations)
+        function selectLocationByName(locationName) {
+            const location = storeLocations.find(l => l.zone_name === locationName);
+            if (!location) {
+                console.error(`Location not found: ${locationName}`);
+                return;
+            }
+
+            // Scroll to the location in the canvas
+            const aisleDiv = document.getElementById(location.location_id);
+            if (aisleDiv) {
+                // Scroll the store canvas to show the location
+                const canvas = document.getElementById('store-canvas');
+                const aisleRect = aisleDiv.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+
+                // Calculate scroll position to center the aisle
+                const scrollTop = aisleDiv.offsetTop - (canvas.clientHeight / 2) + (aisleDiv.offsetHeight / 2);
+                canvas.scrollTo({
+                    top: Math.max(0, scrollTop),
+                    behavior: 'smooth'
+                });
+
+                // Add a temporary pulse effect
+                aisleDiv.classList.add('selected');
+                setTimeout(() => {
+                    aisleDiv.classList.remove('selected');
+                }, 2000);
+            }
+
+            // Open the aisle dialog
+            selectLocation(location);
+        }
+
+        // Open aisle dialog
+        function openAisleDialog(location) {
+            if (!aisleRowsData) {
+                alert('Aisle data not loaded yet. Please wait...');
+                return;
+            }
+
+            const icon = categoryIcons[location.zone_type] || '📦';
+
+            // Update title
+            document.getElementById('aisleTitle').innerHTML = `
+                <span>${icon}</span>
+                <span>${location.zone_name}</span>
+            `;
+
+            // Update location details
+            const recData = currentRecommendations.find(r => r.location === location.zone_name);
+            const overallRoi = recData ? recData.roi.toFixed(2) + 'x' : 'Not analyzed';
+
+            document.getElementById('aisleDetailsGrid').innerHTML = `
+                <div class="detail-item"><strong>Zone Type:</strong> ${location.zone_type}</div>
+                <div class="detail-item"><strong>Category:</strong> ${location.primary_category}</div>
+                <div class="detail-item"><strong>Traffic Level:</strong> ${location.traffic_level}</div>
+                <div class="detail-item"><strong>Traffic Index:</strong> ${location.traffic_index}</div>
+                <div class="detail-item"><strong>Visibility Factor:</strong> ${location.visibility_factor}x</div>
+                <div class="detail-item"><strong>Overall Location ROI:</strong> ${overallRoi}</div>
+            `;
+
+            // Render rows with ROI calculations
+            renderAisleRows(location);
+
+            // Show dialog
+            document.getElementById('aisleModalOverlay').classList.add('active');
+
+            // Reset right panel
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('metricsPanel').classList.remove('active');
+            document.getElementById('chatInMetrics').style.display = 'none';
+        }
+
+        // Render aisle rows
+        function renderAisleRows(location) {
+            const rowList = document.getElementById('rowList');
+            rowList.innerHTML = '';
+
+            const rows = aisleRowsData.row_structure;
+            const productPrice = parseFloat(document.getElementById('price').value) || 2.99;
+
+            rows.forEach(row => {
+                // Calculate ROI for this specific row
+                const baseROI = row.base_roi_multiplier;
+                const visibilityFactor = row.visibility_factor;
+
+                // Apply location modifiers
+                let locationModifier = 1.0;
+                const locationType = location.zone_type.toLowerCase().replace(/\s+/g, '_');
+                if (aisleRowsData.location_type_modifiers[locationType]) {
+                    locationModifier = aisleRowsData.location_type_modifiers[locationType].traffic_multiplier || 1.0;
+                }
+
+                // Apply traffic level modifiers
+                let trafficModifier = 1.0;
+                if (aisleRowsData.traffic_level_modifiers[location.traffic_level]) {
+                    trafficModifier = aisleRowsData.traffic_level_modifiers[location.traffic_level].traffic_multiplier || 1.0;
+                }
+
+                // Calculate final ROI
+                const finalROI = baseROI * locationModifier * trafficModifier;
+                const roiPercentage = ((finalROI - 1) * 100).toFixed(0);
+
+                // Determine card class
+                let cardClass = '';
+                if (finalROI >= 1.15) {
+                    cardClass = 'optimal';
+                } else if (finalROI < 0.85) {
+                    cardClass = 'poor';
+                }
+
+                const rowCard = document.createElement('div');
+                rowCard.className = `row-card ${cardClass}`;
+                rowCard.innerHTML = `
+                    <div class="row-info">
+                        <div class="row-name">${row.row_name}</div>
+                        <div class="row-height">${row.height_range_description} (${row.height_range_meters[0]}m - ${row.height_range_meters[1]}m)</div>
+                        <div class="row-description">${row.description}</div>
+                        ${cardClass === 'optimal' ? '<span class="row-badge">Best Choice</span>' : ''}
+                        ${cardClass === 'poor' ? '<span class="row-badge">Caution</span>' : ''}
+                    </div>
+                    <div class="row-roi">
+                        <div class="roi-value">${finalROI.toFixed(2)}x</div>
+                        <div class="roi-label">ROI Score</div>
+                        <div style="font-size: 12px; color: #64748b; margin-top: 5px;">${roiPercentage > 0 ? '+' : ''}${roiPercentage}%</div>
+                    </div>
+                `;
+
+                rowCard.onclick = () => selectRow(row, finalROI, location);
+                rowList.appendChild(rowCard);
+            });
+        }
+
+        // Select row
+        function selectRow(row, roi, location) {
+            selectedRow = { ...row, calculated_roi: roi, location };
+
+            // Reset chat history when switching rows
+            chatHistory = [];
+
+            // Show metrics panel
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('metricsPanel').classList.add('active');
+            document.getElementById('chatInMetrics').style.display = 'block';
+
+            // Update metrics panel
+            document.getElementById('metricsPanelTitle').textContent = row.row_name;
+            document.getElementById('metricsPanelSubtitle').textContent = row.height_range_description;
+
+            const roiPercentage = ((roi - 1) * 100).toFixed(1);
+
+            document.getElementById('metricsCards').innerHTML = `
+                <div class="metric-card">
+                    <div class="metric-label">ROI Score</div>
+                    <div class="metric-value">${roi.toFixed(2)}x</div>
+                    <div class="metric-description">
+                        Expected return: ${roiPercentage > 0 ? '+' : ''}${roiPercentage}% on placement investment
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Base ROI Multiplier</div>
+                    <div class="metric-value">${row.base_roi_multiplier}x</div>
+                    <div class="metric-description">
+                        Baseline multiplier from shelf position psychology
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Visibility Factor</div>
+                    <div class="metric-value">${row.visibility_factor}x</div>
+                    <div class="metric-description">
+                        How easily customers see products at this height
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Accessibility Factor</div>
+                    <div class="metric-value">${row.accessibility_factor}x</div>
+                    <div class="metric-description">
+                        How easily customers can reach products at this height
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Research Source</div>
+                    <div class="metric-value" style="font-size: 0.9em; line-height: 1.3;">📚</div>
+                    <div class="metric-description">
+                        ${row.source_citation}
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Typical Products</div>
+                    <div class="metric-value" style="font-size: 1.2em; line-height: 1.3;">
+                        ${row.typical_products.join(', ')}
+                    </div>
+                </div>
+            `;
+
+            // Reset chat for this row
+            document.getElementById('chatInMetricsMessages').innerHTML = `
+                <div class="chat-message assistant">
+                    <div class="message-sender">AI Consultant</div>
+                    <div>Hi! I'm analyzing the <strong>${row.row_name}</strong> placement. This shelf position has a <strong>${roi.toFixed(2)}x ROI</strong>. Ask me anything about optimizing your placement strategy here!</div>
+                </div>
+            `;
+        }
+
+        // Close aisle dialog
+        function closeAisleDialog() {
+            document.getElementById('aisleModalOverlay').classList.remove('active');
+            selectedRow = null;
+        }
+
+        // Open chat popup modal
+        function openChatPopup(location) {
+            const recData = currentRecommendations.find(r => r.location === location.zone_name);
+            const roi = recData ? recData.roi.toFixed(2) + 'x' : 'Not analyzed';
+            const icon = categoryIcons[location.zone_type] || '📦';
+
+            document.getElementById('chatPopupLocationInfo').innerHTML = `
+                <h4>${icon} ${location.zone_name}</h4>
+                <div class="info-item"><strong>Zone Type:</strong> ${location.zone_type}</div>
+                <div class="info-item"><strong>Category:</strong> ${location.primary_category}</div>
+                <div class="info-item"><strong>Traffic Level:</strong> ${location.traffic_level}</div>
+                <div class="info-item"><strong>Current ROI:</strong> ${roi}</div>
+            `;
+
+            document.getElementById('chatPopupMessages').innerHTML = `
+                <div class="chat-message assistant">
+                    <div class="message-sender">AI Consultant</div>
+                    <div>Hi! I'm your retail placement AI consultant. I can help you understand ${location.zone_name} and optimize your strategy. Ask me about:<br><br>
+                    • Why this location is good/bad for your product<br>
+                    • Optimization strategies for this zone<br>
+                    • Competitor insights<br>
+                    • Customer behavior patterns<br>
+                    • ROI improvement tactics</div>
+                </div>
+            `;
+
+            document.getElementById('chatModalOverlay').classList.add('active');
+            document.getElementById('chatPopup').classList.add('active');
+        }
+
+        // Close chat popup
+        function closeChatPopup() {
+            document.getElementById('chatModalOverlay').classList.remove('active');
+            document.getElementById('chatPopup').classList.remove('active');
+        }
+
+        // Select location by name
+        function selectLocationByName(zoneName) {
+            const location = storeLocations.find(l => l.zone_name === zoneName);
+            if (location) selectLocation(location);
+        }
+
+        // Send chat message
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            // Validate session exists
+            if (!currentSessionId) {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML += `
+                    <div class="chat-message assistant" style="background: #fef3c7; border-left: 4px solid #f59e0b;">
+                        <div class="message-sender">⚠️ AI Consultant</div>
+                        <div>Please run a product analysis first. Click "Analyze Placement" button above to get started.</div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                input.value = '';
+                return;
+            }
+
+            if (!message || !selectedLocation) return;
+
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML += `
+                <div class="chat-message user">
+                    <div class="message-sender">You</div>
+                    <div>${message}</div>
+                </div>
+            `;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            input.value = '';
+            document.getElementById('sendBtn').disabled = true;
+
+            try {
+                chatMessages.innerHTML += `
+                    <div class="chat-message assistant" id="thinking">
+                        <div class="loading">AI is thinking...</div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                const contextualQuestion = `Regarding ${selectedLocation.zone_name}: ${message}`;
+
+                const response = await fetch(`${API_URL}/defend`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        question: contextualQuestion
+                    })
+                });
+
+                document.getElementById('thinking')?.remove();
+
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const data = await response.json();
+
+                chatMessages.innerHTML += `
+                    <div class="chat-message assistant">
+                        <div class="message-sender">AI Consultant</div>
+                        <div>${data.answer || 'I apologize, I could not generate a response.'}</div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            } catch (error) {
+                console.error('Chat error:', error);
+                document.getElementById('thinking')?.remove();
+                chatMessages.innerHTML += `
+                    <div class="chat-message assistant">
+                        <div class="message-sender">AI Consultant</div>
+                        <div style="color: #ef4444;">Sorry, I encountered an error. Please try again.</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('sendBtn').disabled = false;
+        }
+
+        // Send popup message
+        async function sendPopupMessage() {
+            const input = document.getElementById('chatPopupInput');
+            const message = input.value.trim();
+
+            // Validate session exists
+            if (!currentSessionId) {
+                const chatMessages = document.getElementById('chatPopupMessages');
+                chatMessages.innerHTML += `
+                    <div class="chat-message assistant" style="background: #fef3c7; border-left: 4px solid #f59e0b;">
+                        <div class="message-sender">⚠️ AI Consultant</div>
+                        <div>Please run a product analysis first. Click "Analyze Placement" button above to get started.</div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                input.value = '';
+                return;
+            }
+
+            if (!message || !selectedLocation) return;
+
+            const chatMessages = document.getElementById('chatPopupMessages');
+            chatMessages.innerHTML += `
+                <div class="chat-message user">
+                    <div class="message-sender">You</div>
+                    <div>${message}</div>
+                </div>
+            `;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            input.value = '';
+            document.getElementById('chatPopupSendBtn').disabled = true;
+
+            try {
+                chatMessages.innerHTML += `
+                    <div class="chat-message assistant" id="thinkingPopup">
+                        <div class="loading">AI is thinking...</div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                const contextualQuestion = `Regarding ${selectedLocation.zone_name}: ${message}`;
+
+                const response = await fetch(`${API_URL}/defend`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        question: contextualQuestion,
+                        selected_location: selectedLocation.zone_name
+                    })
+                });
+
+                document.getElementById('thinkingPopup')?.remove();
+
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const data = await response.json();
+
+                chatMessages.innerHTML += `
+                    <div class="chat-message assistant">
+                        <div class="message-sender">AI Consultant</div>
+                        <div>${data.answer || 'I apologize, I could not generate a response.'}</div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            } catch (error) {
+                console.error('Chat error:', error);
+                document.getElementById('thinkingPopup')?.remove();
+                chatMessages.innerHTML += `
+                    <div class="chat-message assistant">
+                        <div class="message-sender">AI Consultant</div>
+                        <div style="color: #ef4444;">Sorry, I encountered an error. Please try again.</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('chatPopupSendBtn').disabled = false;
+        }
+
+        // Enter key for chat
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Enter key for popup chat
+        document.getElementById('chatPopupInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendPopupMessage();
+        });
+
+        // Close button event listener
+        document.getElementById('closeChatBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeChatPopup();
+        });
+
+        // Overlay click to close
+        document.getElementById('chatModalOverlay').addEventListener('click', function(e) {
+            e.preventDefault();
+            closeChatPopup();
+        });
+
+        // Prevent clicks inside popup from closing it
+        document.getElementById('chatPopup').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Close aisle dialog button
+        document.getElementById('closeAisleBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeAisleDialog();
+        });
+
+        // Close aisle dialog on overlay click
+        document.getElementById('aisleModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAisleDialog();
+            }
+        });
+
+        // Send message in metrics chat
+        document.getElementById('chatInMetricsSendBtn').addEventListener('click', sendMetricsChatMessage);
+        document.getElementById('chatInMetricsInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMetricsChatMessage();
+        });
+
+        async function sendMetricsChatMessage() {
+            const input = document.getElementById('chatInMetricsInput');
+            const message = input.value.trim();
+
+            if (!currentSessionId) {
+                const chatMessages = document.getElementById('chatInMetricsMessages');
+                chatMessages.innerHTML += `
+                    <div class="chat-message assistant" style="background: #fef3c7; border-left: 4px solid #f59e0b;">
+                        <div class="message-sender">⚠️ AI Consultant</div>
+                        <div>Please run a product analysis first by clicking "Analyze Placement".</div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                input.value = '';
+                return;
+            }
+
+            if (!message || !selectedRow) return;
+
+            const chatMessages = document.getElementById('chatInMetricsMessages');
+            chatMessages.innerHTML += `
+                <div class="chat-message user">
+                    <div class="message-sender">You</div>
+                    <div>${message}</div>
+                </div>
+            `;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            input.value = '';
+            document.getElementById('chatInMetricsSendBtn').disabled = true;
+
+            try {
+                chatMessages.innerHTML += `
+                    <div class="chat-message assistant" id="thinkingMetrics">
+                        <div class="loading">AI is thinking...</div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Build conversation history context
+                let historyContext = '';
+                if (chatHistory.length > 0) {
+                    historyContext = '\n\nPrevious conversation:\n';
+                    chatHistory.forEach(exchange => {
+                        historyContext += `User: ${exchange.question}\nAI: ${exchange.answer}\n`;
+                    });
+                    historyContext += '\nProvide a varied response that builds on this conversation history and doesn\'t repeat previous answers.\n';
+                }
+
+                const contextualQuestion = `Regarding ${selectedRow.row_name} at ${selectedRow.location.zone_name}: ${message}${historyContext}`;
+
+                const response = await fetch(`${API_URL}/defend`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        question: contextualQuestion
+                    })
+                });
+
+                document.getElementById('thinkingMetrics')?.remove();
+
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const data = await response.json();
+                const aiAnswer = data.answer || 'I apologize, I could not generate a response.';
+
+                // Add to chat history
+                chatHistory.push({
+                    question: message,
+                    answer: aiAnswer
+                });
+
+                chatMessages.innerHTML += `
+                    <div class="chat-message assistant">
+                        <div class="message-sender">AI Consultant</div>
+                        <div>${aiAnswer}</div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            } catch (error) {
+                console.error('Chat error:', error);
+                document.getElementById('thinkingMetrics')?.remove();
+                chatMessages.innerHTML += `
+                    <div class="chat-message assistant">
+                        <div class="message-sender">AI Consultant</div>
+                        <div style="color: #ef4444;">Sorry, I encountered an error. Please try again.</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('chatInMetricsSendBtn').disabled = false;
+        }
+
+        // Initialize
+        loadAisleRowsData();
+        loadStoreLocations();
+    </script>
+</body>
+</html>

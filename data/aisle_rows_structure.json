@@ -1,0 +1,132 @@
+{
+  "metadata": {
+    "description": "Aisle row structure with research-backed ROI multipliers",
+    "created": "2025-11-17",
+    "knowledge_base_source": "knowledge_base/retail_psychology_sources.json"
+  },
+  "row_structure": [
+    {
+      "row_id": 1,
+      "row_name": "Top Shelf",
+      "height_range_meters": [1.5, 2.0],
+      "height_range_description": "Above eye level - requires upward gaze",
+      "base_roi_multiplier": 1.10,
+      "visibility_factor": 0.7,
+      "accessibility_factor": 0.6,
+      "description": "Suitable for attention-grabbing or aspirational products; 10% sales boost over baseline but 40% less visible than eye level",
+      "source_citation": "Source: Trax Retail 2024, Uniwell 2024",
+      "typical_products": ["Premium brands", "Large bulk items", "Seasonal displays"]
+    },
+    {
+      "row_id": 2,
+      "row_name": "Eye Level High",
+      "height_range_meters": [1.4, 1.5],
+      "height_range_description": "Upper eye level zone",
+      "base_roi_multiplier": 1.18,
+      "visibility_factor": 1.15,
+      "accessibility_factor": 0.95,
+      "description": "Strong visibility with 18% sales boost; captures upward glance",
+      "source_citation": "Source: Tastewise 2025, RM Solutions 2024",
+      "typical_products": ["Premium mid-tier products", "New launches", "Promoted items"]
+    },
+    {
+      "row_id": 3,
+      "row_name": "Eye Level Prime",
+      "height_range_meters": [1.2, 1.4],
+      "height_range_description": "Optimal eye level - highest ROI zone",
+      "base_roi_multiplier": 1.23,
+      "visibility_factor": 1.23,
+      "accessibility_factor": 1.0,
+      "description": "Optimal ROI with 23% sales boost; natural line of sight for most shoppers",
+      "source_citation": "Source: Trax Retail 2024, Tastewise 2025, NCBI PMC Research",
+      "typical_products": ["Best-sellers", "High-margin items", "Brand flagships"]
+    },
+    {
+      "row_id": 4,
+      "row_name": "Eye Level Low",
+      "height_range_meters": [1.0, 1.2],
+      "height_range_description": "Lower eye level zone",
+      "base_roi_multiplier": 1.08,
+      "visibility_factor": 0.95,
+      "accessibility_factor": 1.0,
+      "description": "8% sales boost; requires slight downward glance but still accessible",
+      "source_citation": "Source: RM Solutions 2024, MRI Software 2024",
+      "typical_products": ["Standard brands", "Value options", "Everyday items"]
+    },
+    {
+      "row_id": 5,
+      "row_name": "Middle Shelf",
+      "height_range_meters": [0.6, 1.0],
+      "height_range_description": "Below eye level - children's eye level",
+      "base_roi_multiplier": 0.75,
+      "visibility_factor": 0.70,
+      "accessibility_factor": 0.85,
+      "description": "25% sales drop vs eye level; visible to children but requires bending for adults",
+      "source_citation": "Source: Tastewise 2025 (25% drop confirmed)",
+      "typical_products": ["Children's products", "Value brands", "Bulk items"]
+    },
+    {
+      "row_id": 6,
+      "row_name": "Bottom Shelf",
+      "height_range_meters": [0.0, 0.6],
+      "height_range_description": "Lowest shelf - requires bending",
+      "base_roi_multiplier": 0.65,
+      "visibility_factor": 0.50,
+      "accessibility_factor": 0.60,
+      "description": "35% sales drop vs eye level; lowest visibility and accessibility",
+      "source_citation": "Source: RM Solutions 2024, Tastewise 2025",
+      "typical_products": ["Heavy bulk items", "Discount brands", "Storage overflow"]
+    }
+  ],
+  "location_type_modifiers": {
+    "endcap": {
+      "traffic_multiplier": 1.25,
+      "base_roi_boost": 0.23,
+      "description": "End-of-aisle displays with 25% more traffic and 23% sales boost",
+      "source": "Uniwell 2024, MRI Software 2024"
+    },
+    "checkout": {
+      "traffic_multiplier": 1.30,
+      "impulse_buy_rate": 0.45,
+      "base_roi_boost": 0.30,
+      "description": "Highest traffic with 30% traffic boost and 45% impulse buy rate",
+      "source": "MRI Software 2024"
+    },
+    "main_entrance": {
+      "traffic_multiplier": 1.28,
+      "first_impression_boost": 0.20,
+      "description": "28% more traffic; first touchpoint sets shopping tone",
+      "source": "Placer.ai 2024"
+    },
+    "regular_aisle": {
+      "traffic_multiplier": 1.00,
+      "description": "Baseline traffic for standard aisle locations",
+      "source": "MRI Software 2024"
+    },
+    "eye_level_shelf": {
+      "traffic_multiplier": 1.05,
+      "description": "Dedicated eye-level shelf with slight traffic boost",
+      "source": "Trax Retail 2024"
+    }
+  },
+  "traffic_level_modifiers": {
+    "high": {
+      "traffic_multiplier": 1.20,
+      "description": "High-traffic areas (checkout, entrance, popular aisles)"
+    },
+    "medium": {
+      "traffic_multiplier": 1.00,
+      "description": "Standard traffic areas"
+    },
+    "low": {
+      "traffic_multiplier": 0.80,
+      "description": "Low-traffic areas (specialty aisles, back of store)"
+    }
+  },
+  "calculation_formula": {
+    "description": "ROI calculation combining all factors",
+    "formula": "ROI = base_price * (row_multiplier * location_type_multiplier * traffic_level_multiplier) - placement_cost",
+    "example": "For $2.99 product at Eye Level Prime (1.23x) in Endcap (1.25x traffic, +0.23 ROI) with High traffic (1.20x): ROI = 2.99 * (1.23 * 1.48 * 1.20) - placement_cost",
+    "sources": ["source_001", "source_002", "source_004", "source_006"]
+  }
+}

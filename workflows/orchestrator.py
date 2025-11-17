@@ -8,6 +8,7 @@ from agents.input_agent import InputAgent
 from agents.analyzer_agent import AnalyzerAgent
 from agents.explainer_agent import ExplainerAgent
 from models.schemas import ProductInput, PlacementState, Recommendation
+from utils.artifact_logger import ArtifactLogger
 
 # Setup logging
 logging.basicConfig(
@@ -66,28 +67,97 @@ class Orchestrator:
         # Create initial state
         state = PlacementState(product=product_input)
 
+        # Initialize artifact logger
+        artifact_logger = ArtifactLogger(state.session_id)
+
+        # Log product information
+        artifact_logger.add_step(
+            step_name="Workflow Started",
+            description=f"Beginning analysis for product: {product_input.product_name}",
+            details={
+                "product": {
+                    "name": product_input.product_name,
+                    "category": product_input.category,
+                    "price": f"${product_input.price:.2f}",
+                    "budget": f"${product_input.budget:.2f}",
+                    "target_sales": product_input.target_sales,
+                    "target_customers": product_input.target_customers
+                }
+            }
+        )
+
         try:
             # Step 1: Input validation
             logger.info("\n[STEP 1/3] Running InputAgent...")
+            artifact_logger.add_step(
+                step_name="Input Validation",
+                description="Checking that all product details are valid and complete",
+                status="success"
+            )
             state = self.input_agent.execute(state)
 
             if state.errors:
+                artifact_logger.add_error(
+                    message=f"Input validation failed: {'; '.join(state.errors)}",
+                    error_details={"errors": state.errors}
+                )
                 raise ValueError(f"Input validation failed: {'; '.join(state.errors)}")
+
+            # Log any warnings from input validation
+            if state.warnings:
+                for warning in state.warnings:
+                    artifact_logger.add_warning(warning)
 
             # Step 2: ROI analysis
             logger.info("\n[STEP 2/3] Running AnalyzerAgent...")
+            artifact_logger.add_step(
+                step_name="ROI Analysis",
+                description="Analyzing all available store locations and predicting ROI for each one",
+                status="success"
+            )
             state = self.analyzer_agent.execute(state)
 
             if state.errors:
                 error_msg = f"ROI analysis failed: {'; '.join(state.errors)}"
                 logger.error(error_msg)
+                artifact_logger.add_error(error_msg, {"errors": state.errors})
                 raise ValueError(error_msg)
 
             if not state.final_recommendations:
+                artifact_logger.add_error("No suitable locations found within budget")
                 raise ValueError("No recommendations generated")
+
+            # Log ROI analysis results
+            artifact_logger.add_step(
+                step_name="ROI Rankings Generated",
+                description=f"Successfully analyzed {len(state.final_recommendations)} locations within budget",
+                details={
+                    "total_locations_analyzed": len(state.final_recommendations),
+                    "top_3_locations": [
+                        {"location": loc, "roi": roi}
+                        for loc, roi in list(state.final_recommendations.items())[:3]
+                    ]
+                }
+            )
 
             # Step 3: Generate explanations
             logger.info("\n[STEP 3/3] Running ExplainerAgent...")
+
+            # Check if AI is enabled
+            if self.explainer_agent.llm_client and self.explainer_agent.llm_client.enabled:
+                artifact_logger.enable_ai("gemini-2.0-flash")
+                artifact_logger.add_step(
+                    step_name="AI Explanation Generation",
+                    description="Using Google Gemini AI to create natural language explanations",
+                    status="success"
+                )
+            else:
+                artifact_logger.add_step(
+                    step_name="Template Explanation Generation",
+                    description="Generating explanations using templates (AI not available)",
+                    status="warning"
+                )
+
             state = self.explainer_agent.execute(state)
 
             # Create final recommendation
@@ -97,6 +167,26 @@ class Orchestrator:
                 session_id=state.session_id,
                 timestamp=state.timestamp
             )
+
+            # Set final results in artifact logger
+            top_location = list(state.final_recommendations.keys())[0] if state.final_recommendations else None
+            artifact_logger.set_final_results(
+                product_info={
+                    "name": product_input.product_name,
+                    "category": product_input.category,
+                    "price": product_input.price,
+                    "budget": product_input.budget
+                },
+                recommendations=state.final_recommendations,
+                top_recommendation={
+                    "location": top_location,
+                    "roi": state.final_recommendations[top_location] if top_location else None
+                },
+                explanation=state.explanation.model_dump() if hasattr(state.explanation, 'model_dump') else None
+            )
+
+            # Save artifact log
+            artifact_logger.save()
 
             logger.info("=" * 80)
             logger.info("Workflow completed successfully")
@@ -114,6 +204,8 @@ class Orchestrator:
 
         except Exception as e:
             logger.error(f"Workflow failed: {str(e)}")
+            artifact_logger.add_error(f"Workflow failed: {str(e)}")
+            artifact_logger.save()
             raise
 
     def answer_followup(self, session_id: str, question: str, state: PlacementState = None) -> str:
