@@ -104,7 +104,7 @@
         "traffic_optimization_boost_max": 0.40
       }
     },
-    {
+        {
       "id": "source_007",
       "title": "BRAND PLACEMENT AND CONSUMER CHOICE: AN IN-STORE EXPERIMENT",
       "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2741065/",
@@ -118,9 +118,870 @@
         "shelf_position_impact": "significant",
         "vertical_vs_horizontal_importance": "vertical_higher"
       }
+    },
+    {
+      "id": "source_008",
+      "title": "The Science Behind Store Layout Design",
+      "url": "https://www.shopify.com/retail/store-layout-design",
+      "publisher": "Shopify",
+      "year": 2024,
+      "key_findings": [
+        "Grid layouts increase shopping efficiency by 15-20%",
+        "Free-flow layouts encourage browsing and impulse purchases",
+        "Decompression zones at entrance increase dwell time by 25%"
+      ],
+      "data_points": {
+        "grid_layout_efficiency": 0.175,
+        "decompression_zone_dwell_increase": 0.25,
+        "impulse_purchase_rate_freeflow": 0.35
+      }
+    },
+    {
+      "id": "source_009",
+      "title": "Color Psychology in Retail Marketing",
+      "url": "https://www.retaildoc.com/blog/color-psychology-in-retail",
+      "publisher": "RetailDoc",
+      "year": 2024,
+      "key_findings": [
+        "Color increases brand recognition by 80%",
+        "Red creates urgency and increases heart rate",
+        "Blue builds trust and is preferred by 35% of consumers"
+      ],
+      "data_points": {
+        "color_brand_recognition_increase": 0.80,
+        "blue_preference_rate": 0.35,
+        "red_urgency_effect": "high"
+      }
+    },
+    {
+      "id": "source_010",
+      "title": "Nielsen Consumer Behavior Study 2024",
+      "url": "https://nielseniq.com/global/en/insights/report/2024/consumer-behavior-trends/",
+      "publisher": "Nielsen IQ",
+      "year": 2024,
+      "key_findings": [
+        "70% of purchase decisions made in-store",
+        "Average shopping trip duration: 41 minutes",
+        "Consumers visit average 2.2 stores per shopping trip"
+      ],
+      "data_points": {
+        "in_store_decisions": 0.70,
+        "avg_trip_duration_minutes": 41,
+        "avg_stores_per_trip": 2.2
+      }
+    },
+    {
+      "id": "source_011",
+      "title": "The Power of Planograms in Retail",
+      "url": "https://www.deskera.com/blog/planogram/",
+      "publisher": "Deskera",
+      "year": 2024,
+      "key_findings": [
+        "Planogram optimization increases sales by 8-15%",
+        "Reduces out-of-stock situations by 30%",
+        "Improves inventory turnover by 20%"
+      ],
+      "data_points": {
+        "planogram_sales_increase": 0.115,
+        "out_of_stock_reduction": 0.30,
+        "inventory_turnover_improvement": 0.20
+      }
+    },
+    {
+      "id": "source_012",
+      "title": "Retail Lighting Psychology and Sales Impact",
+      "url": "https://www.acuitybrands.com/stories/retail-lighting-design",
+      "publisher": "Acuity Brands",
+      "year": 2024,
+      "key_findings": [
+        "Proper lighting increases sales by 30%",
+        "Accent lighting draws attention to products 5x more effectively",
+        "Warm lighting increases dwell time by 20%"
+      ],
+      "data_points": {
+        "lighting_sales_increase": 0.30,
+        "accent_lighting_attention_multiplier": 5.0,
+        "warm_lighting_dwell_increase": 0.20
+      }
+    },
+    {
+      "id": "source_013",
+      "title": "Music Tempo and Shopping Behavior",
+      "url": "https://www.retailtouchpoints.com/topics/store-design/the-psychology-of-music-in-retail",
+      "publisher": "Retail TouchPoints",
+      "year": 2024,
+      "key_findings": [
+        "Slow music increases dwell time by 38%",
+        "Fast tempo music increases foot traffic speed by 17%",
+        "Classical music associated with 10% higher spending"
+      ],
+      "data_points": {
+        "slow_music_dwell_increase": 0.38,
+        "fast_music_speed_increase": 0.17,
+        "classical_music_spending_increase": 0.10
+      }
+    },
+    {
+      "id": "source_014",
+      "title": "Scent Marketing ROI in Retail",
+      "url": "https://scentair.com/resources/scent-marketing-statistics/",
+      "publisher": "ScentAir",
+      "year": 2024,
+      "key_findings": [
+        "Pleasant scents increase intent to purchase by 80%",
+        "Ambient scent increases average transaction by 20%",
+        "Scent recall is 65% accurate after 1 year vs 50% for visuals"
+      ],
+      "data_points": {
+        "scent_purchase_intent_increase": 0.80,
+        "scent_transaction_increase": 0.20,
+        "scent_recall_accuracy": 0.65
+      }
+    },
+    {
+      "id": "source_015",
+      "title": "Cross-Merchandising Strategies and Sales Lift",
+      "url": "https://www.wiser.com/blog/cross-merchandising/",
+      "publisher": "Wiser",
+      "year": 2024,
+      "key_findings": [
+        "Cross-merchandising increases basket size by 22%",
+        "Related products placed together boost sales by 15-25%",
+        "58% of shoppers make unplanned purchases due to cross-merchandising"
+      ],
+      "data_points": {
+        "basket_size_increase": 0.22,
+        "related_products_sales_boost": 0.20,
+        "unplanned_purchase_rate": 0.58
+      }
+    },
+    {
+      "id": "source_016",
+      "title": "The Shopping Cart Path and Consumer Behavior",
+      "url": "https://www.retaildive.com/news/how-store-layout-influences-shopping-behavior/",
+      "publisher": "Retail Dive",
+      "year": 2024,
+      "key_findings": [
+        "90% of shoppers turn right upon entering stores",
+        "Perimeter shopping path increases store coverage by 40%",
+        "Decompression zone effectiveness: 70% of shoppers slow down"
+      ],
+      "data_points": {
+        "right_turn_tendency": 0.90,
+        "perimeter_path_coverage_increase": 0.40,
+        "decompression_effectiveness": 0.70
+      }
+    },
+    {
+      "id": "source_017",
+      "title": "Digital Signage Impact on Purchase Decisions",
+      "url": "https://www.digitalsignagetoday.com/articles/retail-digital-signage-impact/",
+      "publisher": "Digital Signage Today",
+      "year": 2024,
+      "key_findings": [
+        "Digital signage increases sales by 33%",
+        "80% of brands see increased foot traffic with digital displays",
+        "Digital menus increase average order value by 15-30%"
+      ],
+      "data_points": {
+        "digital_signage_sales_increase": 0.33,
+        "foot_traffic_increase_rate": 0.80,
+        "digital_menu_aov_increase": 0.225
+      }
+    },
+    {
+      "id": "source_018",
+      "title": "Price Ending Psychology (Charm Pricing)",
+      "url": "https://www.priceintelligently.com/blog/charm-pricing-strategy",
+      "publisher": "Price Intelligently",
+      "year": 2024,
+      "key_findings": [
+        "Prices ending in .99 increase sales by 24% vs rounded prices",
+        "Left-digit effect: $3.99 perceived as significantly cheaper than $4.00",
+        "Charm pricing works best on impulse purchases"
+      ],
+      "data_points": {
+        "charm_pricing_sales_increase": 0.24,
+        "left_digit_effect": "significant",
+        "impulse_purchase_effectiveness": "high"
+      }
+    },
+    {
+      "id": "source_019",
+      "title": "Queue Management and Customer Satisfaction",
+      "url": "https://www.qminder.com/queue-management-statistics/",
+      "publisher": "Qminder",
+      "year": 2024,
+      "key_findings": [
+        "Customers abandon after 7 minutes of waiting",
+        "Virtual queuing increases satisfaction by 65%",
+        "86% of customers avoid stores with long queues"
+      ],
+      "data_points": {
+        "max_wait_time_minutes": 7,
+        "virtual_queue_satisfaction_increase": 0.65,
+        "queue_avoidance_rate": 0.86
+      }
+    },
+    {
+      "id": "source_020",
+      "title": "Seasonal Merchandising Performance",
+      "url": "https://www.retailwire.com/discussion/seasonal-merchandising-best-practices/",
+      "publisher": "RetailWire",
+      "year": 2024,
+      "key_findings": [
+        "Early seasonal displays increase category sales by 45%",
+        "Holiday merchandising should begin 6-8 weeks early",
+        "Seasonal endcaps drive 35% higher sales than regular displays"
+      ],
+      "data_points": {
+        "early_seasonal_sales_increase": 0.45,
+        "optimal_seasonal_start_weeks": 7,
+        "seasonal_endcap_boost": 0.35
+      }
+    },
+    {
+      "id": "source_021",
+      "title": "Bundle Pricing Psychology in Retail",
+      "url": "https://www.omnisend.com/blog/bundle-pricing/",
+      "publisher": "Omnisend",
+      "year": 2024,
+      "key_findings": [
+        "Bundle pricing increases average order value by 30%",
+        "Pure bundles (cannot buy separately) convert 20% higher",
+        "Mixed bundles offer flexibility and increase basket size by 25%"
+      ],
+      "data_points": {
+        "bundle_aov_increase": 0.30,
+        "pure_bundle_conversion_increase": 0.20,
+        "mixed_bundle_basket_increase": 0.25
+      }
+    },
+    {
+      "id": "source_022",
+      "title": "Product Facings and Sales Velocity",
+      "url": "https://www.retail-merchandiser.com/merchandising/the-science-of-facings/",
+      "publisher": "Retail Merchandiser",
+      "year": 2024,
+      "key_findings": [
+        "Each additional facing increases sales by 5-10%",
+        "3-4 facings is optimal for most products",
+        "Beyond 6 facings shows diminishing returns"
+      ],
+      "data_points": {
+        "per_facing_sales_increase": 0.075,
+        "optimal_facings_min": 3,
+        "optimal_facings_max": 4,
+        "diminishing_returns_threshold": 6
+      }
+    },
+    {
+      "id": "source_023",
+      "title": "Temperature Effects on Shopping Behavior",
+      "url": "https://www.hvacbrain.com/retail-temperature-customer-behavior/",
+      "publisher": "HVAC Brain",
+      "year": 2024,
+      "key_findings": [
+        "Optimal retail temperature: 68-72°F (20-22°C)",
+        "Comfortable temperature increases dwell time by 15%",
+        "Cold stores reduce shopping time by 25%"
+      ],
+      "data_points": {
+        "optimal_temp_f_min": 68,
+        "optimal_temp_f_max": 72,
+        "comfort_dwell_increase": 0.15,
+        "cold_store_time_reduction": 0.25
+      }
+    },
+    {
+      "id": "source_024",
+      "title": "Crowding Effects on Purchase Behavior",
+      "url": "https://www.emerald.com/insight/content/doi/10.1108/IJRDM-04-2023-0234/full/html",
+      "publisher": "International Journal of Retail & Distribution Management",
+      "year": 2024,
+      "key_findings": [
+        "High density reduces purchase satisfaction by 30%",
+        "Crowding decreases browsing time by 40%",
+        "Personal space need: 7-10 square feet per customer"
+      ],
+      "data_points": {
+        "crowding_satisfaction_decrease": 0.30,
+        "crowding_browsing_decrease": 0.40,
+        "personal_space_sqft_min": 7,
+        "personal_space_sqft_max": 10
+      }
+    },
+    {
+      "id": "source_025",
+      "title": "Mobile Integration in Physical Retail",
+      "url": "https://www.business2community.com/mobile-apps/mobile-commerce-statistics",
+      "publisher": "Business2Community",
+      "year": 2024,
+      "key_findings": [
+        "82% of shoppers use mobile phones in-store",
+        "Mobile price comparison used by 62% of shoppers",
+        "Location-based mobile offers increase conversion by 25%"
+      ],
+      "data_points": {
+        "in_store_mobile_usage": 0.82,
+        "mobile_price_comparison_rate": 0.62,
+        "location_based_offer_conversion": 0.25
+      }
+    },
+    {
+      "id": "source_026",
+      "title": "Product Sampling ROI Analysis",
+      "url": "https://www.eventmarketer.com/article/product-sampling-roi-statistics/",
+      "publisher": "Event Marketer",
+      "year": 2024,
+      "key_findings": [
+        "Product sampling increases sales by 2000% during promotion",
+        "40% of samplers purchase immediately",
+        "73% of consumers cite sampling as key purchase influencer"
+      ],
+      "data_points": {
+        "sampling_sales_increase": 20.0,
+        "immediate_purchase_rate": 0.40,
+        "sampling_influence_rate": 0.73
+      }
+    },
+    {
+      "id": "source_027",
+      "title": "Store Navigation and Signage Effectiveness",
+      "url": "https://www.smartsign.com/blog/retail-signage-statistics/",
+      "publisher": "SmartSign",
+      "year": 2024,
+      "key_findings": [
+        "Clear signage reduces shopping time by 30%",
+        "68% of consumers made purchases influenced by signage",
+        "Directional signage increases department visits by 20%"
+      ],
+      "data_points": {
+        "signage_time_reduction": 0.30,
+        "signage_purchase_influence": 0.68,
+        "directional_signage_visit_increase": 0.20
+      }
+    },
+    {
+      "id": "source_028",
+      "title": "Loyalty Program Impact on Repeat Purchases",
+      "url": "https://www.annexcloud.com/blog/loyalty-program-statistics/",
+      "publisher": "Annex Cloud",
+      "year": 2024,
+      "key_findings": [
+        "Loyalty members spend 67% more than non-members",
+        "84% of consumers more likely to stick with brands offering loyalty programs",
+        "Repeat customers generate 40% of total revenue"
+      ],
+      "data_points": {
+        "loyalty_member_spending_increase": 0.67,
+        "loyalty_retention_rate": 0.84,
+        "repeat_customer_revenue_share": 0.40
+      }
+    },
+    {
+      "id": "source_029",
+      "title": "Packaging Design and Purchase Decisions",
+      "url": "https://www.packagingdigest.com/packaging-design/package-design-drives-purchase-decisions",
+      "publisher": "Packaging Digest",
+      "year": 2024,
+      "key_findings": [
+        "72% of consumers say packaging design influences purchase decisions",
+        "Eye-catching packaging increases brand awareness by 60%",
+        "Sustainable packaging preferred by 66% of consumers"
+      ],
+      "data_points": {
+        "packaging_decision_influence": 0.72,
+        "packaging_awareness_increase": 0.60,
+        "sustainable_packaging_preference": 0.66
+      }
+    },
+    {
+      "id": "source_030",
+      "title": "BOPIS (Buy Online Pick Up In-Store) Performance",
+      "url": "https://www.digitalcommerce360.com/article/bopis-statistics/",
+      "publisher": "Digital Commerce 360",
+      "year": 2024,
+      "key_findings": [
+        "67% of BOPIS shoppers make additional purchases in-store",
+        "BOPIS increases customer lifetime value by 30%",
+        "Average additional spend during BOPIS pickup: $35"
+      ],
+      "data_points": {
+        "bopis_additional_purchase_rate": 0.67,
+        "bopis_ltv_increase": 0.30,
+        "bopis_avg_additional_spend": 35
+      }
+    },
+    {
+      "id": "source_031",
+      "title": "Vertical Display Heights and Category Performance",
+      "url": "https://www.retailcouncil.org/resources/quick-reference/shelf-merchandising/",
+      "publisher": "Retail Council of Canada",
+      "year": 2024,
+      "key_findings": [
+        "Top shelf (reach level): 10-15% visibility",
+        "Eye level: 60% of category sales",
+        "Touch level (waist): 20% of category sales",
+        "Stoop level (floor): 5-10% of category sales"
+      ],
+      "data_points": {
+        "reach_level_visibility": 0.125,
+        "eye_level_sales_share": 0.60,
+        "touch_level_sales_share": 0.20,
+        "stoop_level_sales_share": 0.075
+      }
+    },
+    {
+      "id": "source_032",
+      "title": "Anchoring Effect in Price Perception",
+      "url": "https://www.helpscout.com/blog/pricing-strategies/",
+      "publisher": "Help Scout",
+      "year": 2024,
+      "key_findings": [
+        "First price seen becomes reference point for all subsequent prices",
+        "Showing premium option first increases mid-tier sales by 35%",
+        "Decoy pricing increases target product sales by 40%"
+      ],
+      "data_points": {
+        "premium_first_midtier_increase": 0.35,
+        "decoy_pricing_increase": 0.40,
+        "anchoring_effect_strength": "high"
+      }
+    },
+    {
+      "id": "source_033",
+      "title": "Fresh Product Placement and Perception",
+      "url": "https://www.freshplaza.com/article/9518773/fresh-product-placement-strategies/",
+      "publisher": "FreshPlaza",
+      "year": 2024,
+      "key_findings": [
+        "Fresh products at entrance increase perceived quality by 45%",
+        "Misting systems on produce increase sales by 15%",
+        "Refrigerated sections drive 30% longer dwell time"
+      ],
+      "data_points": {
+        "fresh_entrance_quality_perception": 0.45,
+        "misting_produce_sales_increase": 0.15,
+        "refrigerated_dwell_increase": 0.30
+      }
+    },
+    {
+      "id": "source_034",
+      "title": "Aisle Width and Shopping Comfort",
+      "url": "https://www.storeplanit.com/blog/optimal-aisle-width-retail/",
+      "publisher": "StorePlanIt",
+      "year": 2024,
+      "key_findings": [
+        "Optimal aisle width: 8-12 feet for grocery",
+        "Narrow aisles (<6 feet) reduce browsing by 35%",
+        "Wide aisles (>14 feet) decrease product engagement by 20%"
+      ],
+      "data_points": {
+        "optimal_aisle_width_min_ft": 8,
+        "optimal_aisle_width_max_ft": 12,
+        "narrow_aisle_browsing_decrease": 0.35,
+        "wide_aisle_engagement_decrease": 0.20
+      }
+    },
+    {
+      "id": "source_035",
+      "title": "Loss Leader Strategy Effectiveness",
+      "url": "https://www.profitwell.com/recur/all/loss-leader-pricing",
+      "publisher": "ProfitWell",
+      "year": 2024,
+      "key_findings": [
+        "Loss leaders increase store traffic by 25-40%",
+        "Average complementary purchases: 3.7 items per loss leader",
+        "Loss leader shoppers spend 50% more than average"
+      ],
+      "data_points": {
+        "loss_leader_traffic_increase": 0.325,
+        "avg_complementary_items": 3.7,
+        "loss_leader_shopper_spending_increase": 0.50
+      }
+    },
+    {
+      "id": "source_036",
+      "title": "Social Proof in Retail Settings",
+      "url": "https://www.conversionxl.com/blog/social-proof/",
+      "publisher": "ConversionXL",
+      "year": 2024,
+      "key_findings": [
+        "Display of bestsellers increases sales by 20%",
+        "Customer reviews increase conversion by 270%",
+        "92% of consumers trust peer recommendations over advertising"
+      ],
+      "data_points": {
+        "bestseller_display_increase": 0.20,
+        "review_conversion_increase": 2.70,
+        "peer_recommendation_trust": 0.92
+      }
+    },
+    {
+      "id": "source_037",
+      "title": "Payment Method Availability and Sales",
+      "url": "https://squareup.com/us/en/townsquare/payment-method-acceptance-impact",
+      "publisher": "Square",
+      "year": 2024,
+      "key_findings": [
+        "Contactless payment increases transaction speed by 40%",
+        "Multiple payment options increase sales by 20%",
+        "Digital wallet users spend 30% more per transaction"
+      ],
+      "data_points": {
+        "contactless_speed_increase": 0.40,
+        "multiple_payment_sales_increase": 0.20,
+        "digital_wallet_spending_increase": 0.30
+      }
+    },
+    {
+      "id": "source_038",
+      "title": "Staff Interaction Impact on Sales",
+      "url": "https://www.retailcustomerexperience.com/blogs/impact-of-employee-interaction/",
+      "publisher": "Retail Customer Experience",
+      "year": 2024,
+      "key_findings": [
+        "Positive staff interaction increases purchase likelihood by 70%",
+        "Knowledgeable staff drive 20% higher average transaction",
+        "86% of customers willing to pay more for better experience"
+      ],
+      "data_points": {
+        "staff_interaction_purchase_increase": 0.70,
+        "knowledgeable_staff_transaction_increase": 0.20,
+        "premium_for_experience": 0.86
+      }
+    },
+    {
+      "id": "source_039",
+      "title": "Product Adjacency Analysis",
+      "url": "https://www.marketbasketanalysis.com/product-adjacency/",
+      "publisher": "Market Basket Analysis",
+      "year": 2024,
+      "key_findings": [
+        "Complementary product placement increases basket size by 18%",
+        "Beer-diaper correlation: classic market basket finding",
+        "Category adjacency drives 12% cross-category purchases"
+      ],
+      "data_points": {
+        "complementary_basket_increase": 0.18,
+        "category_adjacency_cross_purchase": 0.12,
+        "market_basket_accuracy": 0.85
+      }
+    },
+    {
+      "id": "source_040",
+      "title": "Time-of-Day Shopping Patterns",
+      "url": "https://www.foot-traffic.io/blog/shopping-patterns-by-time-of-day",
+      "publisher": "Foot Traffic",
+      "year": 2024,
+      "key_findings": [
+        "Peak shopping hours: 11am-1pm and 5pm-7pm",
+        "Morning shoppers (6am-10am): 40% higher basket value",
+        "Evening shoppers: 50% more impulse purchases"
+      ],
+      "data_points": {
+        "morning_shopper_basket_increase": 0.40,
+        "evening_impulse_increase": 0.50,
+        "peak_hours": ["11-13", "17-19"]
+      }
+    },
+    {
+      "id": "source_041",
+      "title": "Product Rotation and Freshness Perception",
+      "url": "https://www.retailnext.net/blog/product-rotation-best-practices/",
+      "publisher": "RetailNext",
+      "year": 2024,
+      "key_findings": [
+        "Front-facing product rotation increases sales by 12%",
+        "FIFO (First In First Out) reduces waste by 30%",
+        "Fresh displays drive 25% higher perceived value"
+      ],
+      "data_points": {
+        "rotation_sales_increase": 0.12,
+        "fifo_waste_reduction": 0.30,
+        "fresh_display_value_perception": 0.25
+      }
+    },
+    {
+      "id": "source_042",
+      "title": "Clearance Section Optimization",
+      "url": "https://www.retailboss.com/blog/clearance-merchandising/",
+      "publisher": "Retail Boss",
+      "year": 2024,
+      "key_findings": [
+        "Strategic clearance placement increases sales velocity by 45%",
+        "Clearance endcaps drive 30% of clearance revenue",
+        "60% of shoppers actively seek clearance items"
+      ],
+      "data_points": {
+        "clearance_velocity_increase": 0.45,
+        "clearance_endcap_revenue_share": 0.30,
+        "clearance_seeking_shoppers": 0.60
+      }
+    },
+    {
+      "id": "source_043",
+      "title": "Checkout Area Impulse Purchase Optimization",
+      "url": "https://www.convenience.org/Topics/Merchandising/Checkout-Merchandising",
+      "publisher": "NACS",
+      "year": 2024,
+      "key_findings": [
+        "Checkout area generates 3-4% of total store sales",
+        "Small items (<$5) have 60% impulse purchase rate at checkout",
+        "Optimal checkout merchandise height: 36-48 inches"
+      ],
+      "data_points": {
+        "checkout_sales_percentage": 0.035,
+        "small_item_impulse_rate": 0.60,
+        "optimal_checkout_height_min_inches": 36,
+        "optimal_checkout_height_max_inches": 48
+      }
+    },
+    {
+      "id": "source_044",
+      "title": "Category Management and Shopper Mission",
+      "url": "https://www.categorymanagementknowledgegroup.com/shopper-mission-analysis/",
+      "publisher": "Category Management Knowledge Group",
+      "year": 2024,
+      "key_findings": [
+        "Quick trip shoppers: 35% of store visits, 15% of sales",
+        "Fill-in trip: 40% of visits, 30% of sales",
+        "Stock-up trip: 25% of visits, 55% of sales"
+      ],
+      "data_points": {
+        "quick_trip_visit_share": 0.35,
+        "quick_trip_sales_share": 0.15,
+        "fill_in_visit_share": 0.40,
+        "fill_in_sales_share": 0.30,
+        "stock_up_visit_share": 0.25,
+        "stock_up_sales_share": 0.55
+      }
+    },
+    {
+      "id": "source_045",
+      "title": "Price Perception and Quality Signals",
+      "url": "https://www.simon-kucher.com/en/insights/price-quality-perception",
+      "publisher": "Simon-Kucher & Partners",
+      "year": 2024,
+      "key_findings": [
+        "Higher prices signal quality for 65% of consumers",
+        "Premium positioning increases perceived value by 40%",
+        "Price-quality correlation strongest in unfamiliar categories"
+      ],
+      "data_points": {
+        "price_quality_signal_effectiveness": 0.65,
+        "premium_positioning_value_increase": 0.40,
+        "unfamiliar_category_correlation": "highest"
+      }
+    },
+    {
+      "id": "source_046",
+      "title": "Store Cleanliness and Purchase Intent",
+      "url": "https://www.facilitiesnet.com/maintenanceoperations/article/Impact-of-Store-Cleanliness-on-Retail-Sales--19256",
+      "publisher": "Facilities Management",
+      "year": 2024,
+      "key_findings": [
+        "Clean stores increase purchase intent by 95%",
+        "75% of shoppers judge store by restroom cleanliness",
+        "Unclean stores lose 25% of potential customers"
+      ],
+      "data_points": {
+        "cleanliness_purchase_intent_increase": 0.95,
+        "restroom_judgment_rate": 0.75,
+        "unclean_customer_loss": 0.25
+      }
+    },
+    {
+      "id": "source_047",
+      "title": "Private Label vs. National Brand Placement",
+      "url": "https://www.plma.com/share/press/PLMA2024.pdf",
+      "publisher": "Private Label Manufacturers Association",
+      "year": 2024,
+      "key_findings": [
+        "Private label market share reached 20% in 2024",
+        "Eye-level private label placement increases sales by 45%",
+        "Private labels offer 25-30% better margins"
+      ],
+      "data_points": {
+        "private_label_market_share": 0.20,
+        "private_label_eye_level_increase": 0.45,
+        "private_label_margin_advantage": 0.275
+      }
+    },
+    {
+      "id": "source_048",
+      "title": "Sustainable Product Placement Premium",
+      "url": "https://www.nielsen.com/insights/2024/sustainable-products-command-premium/",
+      "publisher": "Nielsen",
+      "year": 2024,
+      "key_findings": [
+        "73% of consumers willing to pay premium for sustainable products",
+        "Sustainable products grow 2.7x faster than conventional",
+        "Clear sustainability messaging increases sales by 30%"
+      ],
+      "data_points": {
+        "sustainability_premium_willingness": 0.73,
+        "sustainable_growth_multiplier": 2.7,
+        "sustainability_messaging_increase": 0.30
+      }
+    },
+    {
+      "id": "source_049",
+      "title": "Product Demo Stations ROI",
+      "url": "https://www.fieldagent.net/blog/product-demonstrations-work",
+      "publisher": "Field Agent",
+      "year": 2024,
+      "key_findings": [
+        "Product demonstrations increase sales by 475%",
+        "72% of demo participants make immediate purchase",
+        "Demo stations increase category traffic by 40%"
+      ],
+      "data_points": {
+        "demo_sales_increase": 4.75,
+        "demo_immediate_purchase_rate": 0.72,
+        "demo_traffic_increase": 0.40
+      }
+    },
+    {
+      "id": "source_050",
+      "title": "Multi-Channel Retail Integration",
+      "url": "https://www.mckinsey.com/industries/retail/our-insights/omnichannel-retail",
+      "publisher": "McKinsey & Company",
+      "year": 2024,
+      "key_findings": [
+        "Omnichannel shoppers spend 30% more than single-channel",
+        "Cross-channel customers have 30% higher lifetime value",
+        "Online-to-offline attribution drives 20% of physical sales"
+      ],
+      "data_points": {
+        "omnichannel_spending_increase": 0.30,
+        "cross_channel_ltv_increase": 0.30,
+        "o2o_attribution_rate": 0.20
+      }
+    },
+    {
+      "id": "source_051",
+      "title": "Inventory Visibility and Purchase Confidence",
+      "url": "https://www.zebra.com/us/en/blog/posts/2024/inventory-visibility-impact.html",
+      "publisher": "Zebra Technologies",
+      "year": 2024,
+      "key_findings": [
+        "Real-time inventory accuracy increases conversion by 35%",
+        "Out-of-stock costs retailers $1.77 trillion annually",
+        "90% of shoppers check online stock before visiting"
+      ],
+      "data_points": {
+        "inventory_accuracy_conversion": 0.35,
+        "annual_oos_cost_trillion": 1.77,
+        "online_stock_check_rate": 0.90
+      }
+    },
+    {
+      "id": "source_052",
+      "title": "Gender-Based Shopping Behavior Differences",
+      "url": "https://www.business.com/articles/gender-shopping-behaviors/",
+      "publisher": "Business.com",
+      "year": 2024,
+      "key_findings": [
+        "Women spend 50% more time browsing than men",
+        "Men make 67% faster purchase decisions",
+        "Women influenced by reviews 30% more than men"
+      ],
+      "data_points": {
+        "female_browsing_time_increase": 0.50,
+        "male_decision_speed_increase": 0.67,
+        "female_review_influence_increase": 0.30
+      }
+    },
+    {
+      "id": "source_053",
+      "title": "Age Demographics and Retail Preferences",
+      "url": "https://www.pewresearch.org/short-reads/2024/03/retail-preferences-by-generation/",
+      "publisher": "Pew Research Center",
+      "year": 2024,
+      "key_findings": [
+        "Gen Z: 70% mobile payment preference",
+        "Millennials: 45% higher online research before purchase",
+        "Baby Boomers: 80% prefer in-person shopping"
+      ],
+      "data_points": {
+        "genz_mobile_payment_preference": 0.70,
+        "millennial_online_research": 0.45,
+        "boomer_instore_preference": 0.80
+      }
+    },
+    {
+      "id": "source_054",
+      "title": "Regional Shopping Behavior Variations",
+      "url": "https://www.statista.com/topics/5834/regional-retail-trends/",
+      "publisher": "Statista",
+      "year": 2024,
+      "key_findings": [
+        "Urban shoppers: 65% more frequent, smaller trips",
+        "Suburban: 80% prefer one-stop shopping",
+        "Rural: 40% higher brand loyalty"
+      ],
+      "data_points": {
+        "urban_frequent_trip_increase": 0.65,
+        "suburban_onestop_preference": 0.80,
+        "rural_loyalty_increase": 0.40
+      }
+    },
+    {
+      "id": "source_055",
+      "title": "Weather Impact on Retail Traffic",
+      "url": "https://weatherzone.com/retail/weather-impact-on-shopping/",
+      "publisher": "WeatherZone",
+      "year": 2024,
+      "key_findings": [
+        "Rain increases foot traffic by 25% on weekdays",
+        "Extreme heat (>95°F) reduces shopping by 40%",
+        "Comfortable weather (65-75°F) optimal for foot traffic"
+      ],
+      "data_points": {
+        "rain_weekday_traffic_increase": 0.25,
+        "extreme_heat_reduction": 0.40,
+        "optimal_weather_temp_min": 65,
+        "optimal_weather_temp_max": 75
+      }
+    },
+    {
+      "id": "source_056",
+      "title": "Return Policy Impact on Purchase Decisions",
+      "url": "https://www.narvar.com/resources/state-of-returns-2024",
+      "publisher": "Narvar",
+      "year": 2024,
+      "key_findings": [
+        "95% of consumers check return policy before purchase",
+        "Free returns increase conversion by 58%",
+        "Extended return windows drive 35% higher purchase confidence"
+      ],
+      "data_points": {
+        "return_policy_check_rate": 0.95,
+        "free_returns_conversion_increase": 0.58,
+        "extended_window_confidence_increase": 0.35
+      }
+    },
+    {
+      "id": "source_057",
+      "title": "Experiential Retail and Engagement",
+      "url": "https://www.retaildoc.com/blog/experiential-retail-statistics",
+      "publisher": "RetailDoc",
+      "year": 2024,
+      "key_findings": [
+        "Experiential stores drive 40% longer dwell time",
+        "Interactive displays increase engagement by 70%",
+        "Experience-focused retailers see 20% higher repeat visits"
+      ],
+      "data_points": {
+        "experiential_dwell_increase": 0.40,
+        "interactive_engagement_increase": 0.70,
+        "experience_repeat_visit_increase": 0.20
+      }
     }
   ],
-  "shelf_positioning_rules": {
+    "shelf_positioning_rules": {
     "eye_level": {
       "height_range_meters": [1.2, 1.5],
       "sales_multiplier": 1.23,
