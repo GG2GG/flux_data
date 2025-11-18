@@ -3,9 +3,11 @@ Base agent class that all specialized agents inherit from.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import logging
+import time
 from models.schemas import PlacementState
+from utils.state_logger import get_state_logger
 
 # Setup logging
 logging.basicConfig(
@@ -23,17 +25,73 @@ class BaseAgent(ABC):
     and return an updated state.
     """
 
-    def __init__(self, name: str, description: str):
+    def __init__(self, name: str, description: str, enable_state_logging: bool = True):
         """
         Initialize the base agent.
 
         Args:
             name: Human-readable name of the agent
             description: Brief description of agent's purpose
+            enable_state_logging: Enable state transition logging
         """
         self.name = name
         self.description = description
         self.logger = logging.getLogger(f"Agent.{name}")
+        self.enable_state_logging = enable_state_logging
+        self.state_logger = get_state_logger() if enable_state_logging else None
+        self.step_number: Optional[int] = None
+
+    def execute_with_logging(self, state: PlacementState) -> PlacementState:
+        """
+        Execute agent with automatic state logging.
+
+        Args:
+            state: Current placement state
+
+        Returns:
+            Updated placement state
+        """
+        start_time = time.time()
+
+        # Log input state
+        if self.state_logger:
+            self.state_logger.log_agent_input(
+                agent_name=self.name,
+                state=state,
+                step_number=self.step_number
+            )
+
+        try:
+            # Execute agent logic
+            output_state = self.execute(state)
+
+            # Calculate execution time
+            execution_time = time.time() - start_time
+
+            # Log output state
+            if self.state_logger:
+                self.state_logger.log_agent_output(
+                    agent_name=self.name,
+                    state=output_state,
+                    step_number=self.step_number,
+                    metrics={
+                        "execution_time_seconds": round(execution_time, 3),
+                        "errors_count": len(output_state.errors),
+                        "warnings_count": len(output_state.warnings)
+                    }
+                )
+
+            return output_state
+
+        except Exception as e:
+            # Log error
+            if self.state_logger:
+                self.state_logger.log_error(
+                    agent_name=self.name,
+                    error=e,
+                    state=state
+                )
+            raise
 
     @abstractmethod
     def execute(self, state: PlacementState) -> PlacementState:

@@ -965,37 +965,38 @@
         // =================================================================
 
         function renderPlanogram(data) {
-            // Get recommendations
-            const recommendations = data.recommendations || [];
+            // Convert recommendations object to lookup map
+            const recommendationsObj = data.recommendations || {};
+            const recommendationsMap = new Map(Object.entries(recommendationsObj));
 
             const html = `
                 <div class="store-entrance">🚪 MAIN ENTRANCE</div>
                 <div class="planogram-visualization" id="planogramGrid">
-                    ${generateShelfLocations(recommendations)}
+                    ${generateShelfLocations(recommendationsMap)}
                 </div>
             `;
 
             document.getElementById('planogramContent').innerHTML = html;
         }
 
-        function generateShelfLocations(recommendations) {
-            // Define store layout positions
+        function generateShelfLocations(recommendationsMap) {
+            // Define store layout positions - MUST match backend location names exactly
             const locations = [
                 { id: 1, name: 'Main Entrance Display', x: '45%', y: '5%', icon: '🚪' },
                 { id: 2, name: 'End Cap 1 - Beverages', x: '5%', y: '15%', icon: '🥤' },
                 { id: 3, name: 'End Cap 2 - Snacks', x: '75%', y: '15%', icon: '🍿' },
-                { id: 4, name: 'Eye Level - Aisle 1', x: '30%', y: '30%', icon: '👁️' },
-                { id: 5, name: 'Eye Level - Aisle 2', x: '55%', y: '30%', icon: '👁️' },
+                { id: 4, name: 'Beverage Aisle - Eye Level', x: '30%', y: '30%', icon: '👁️' },
+                { id: 5, name: 'Snack Aisle - Eye Level', x: '55%', y: '30%', icon: '👁️' },
                 { id: 6, name: 'Checkout Lane 1', x: '20%', y: '75%', icon: '🛒' },
-                { id: 7, name: 'Checkout Lane 2', x: '45%', y: '75%', icon: '🛒' },
-                { id: 8, name: 'Checkout Lane 3', x: '70%', y: '75%', icon: '🛒' },
-                { id: 9, name: 'Dairy Section', x: '10%', y: '50%', icon: '🥛' },
-                { id: 10, name: 'Bakery Section', x: '80%', y: '50%', icon: '🍞' }
+                { id: 7, name: 'Beverage Aisle - Bottom', x: '30%', y: '45%', icon: '⬇️' },
+                { id: 8, name: 'Personal Care Aisle', x: '70%', y: '35%', icon: '🧴' },
+                { id: 9, name: 'Dairy Section - Regular', x: '10%', y: '50%', icon: '🥛' },
+                { id: 10, name: 'Bakery Display', x: '80%', y: '50%', icon: '🍞' }
             ];
 
             return locations.map((loc, index) => {
-                const rec = recommendations[index] || {};
-                const roi = rec.roi_score || (Math.random() * 1.5 + 0.5).toFixed(2);
+                // Find ROI by matching location name
+                const roi = recommendationsMap.get(loc.name) || 0;
                 const quality = roi > 1.3 ? 'optimal' : roi > 1.0 ? 'good' : 'poor';
 
                 return `
@@ -1021,7 +1022,15 @@
         // =================================================================
 
         function renderRecommendations(data) {
-            const recommendations = data.recommendations || [];
+            // Convert recommendations object to array
+            const recommendationsObj = data.recommendations || {};
+            const recommendations = Object.entries(recommendationsObj)
+                .map(([location, roi]) => ({
+                    location_name: location,
+                    roi_score: roi
+                }))
+                .sort((a, b) => b.roi_score - a.roi_score);
+
             const panel = document.getElementById('recommendationsPanel');
             panel.classList.remove('hidden');
 
@@ -1036,7 +1045,7 @@
                         <div class="rec-rank">${index + 1}</div>
                         <div class="rec-header">
                             <div class="rec-location">${rec.location_name || `Location ${index + 1}`}</div>
-                            <div class="rec-roi">${rec.roi_score || '1.5'}x</div>
+                            <div class="rec-roi">${rec.roi_score.toFixed(2) || '1.5'}x</div>
                         </div>
                         <p style="font-size: 0.875em; color: var(--neutral-600); margin-top: 8px;">
                             ${rec.explanation || 'Optimal placement based on historical performance and category fit.'}

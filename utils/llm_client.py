@@ -1,6 +1,7 @@
 """
 LLM Client for OpenAI-compatible APIs
 Supports OpenAI, OpenRouter, and other compatible endpoints
+Includes knowledge base integration for research-backed responses
 """
 
 import os
@@ -9,6 +10,7 @@ import logging
 from typing import Dict, List, Optional, Any
 from openai import OpenAI
 from dotenv import load_dotenv
+from utils.knowledge_base_loader import get_knowledge_base
 
 # Load environment variables from .env file
 load_dotenv()
@@ -276,7 +278,8 @@ Provide strategic analysis of our competitive position and recommendations for s
         question: str,
         product: Dict[str, Any],
         recommendations: Dict[str, float],
-        context: Dict[str, Any]
+        context: Dict[str, Any],
+        use_knowledge_base: bool = True
     ) -> str:
         """
         Answer follow-up questions about recommendations using LLM.
@@ -286,6 +289,7 @@ Provide strategic analysis of our competitive position and recommendations for s
             product: Product details
             recommendations: ROI recommendations
             context: Additional context (competitors, historical data, etc.)
+            use_knowledge_base: Whether to include research-backed insights
 
         Returns:
             Natural language answer
@@ -295,6 +299,7 @@ Provide strategic analysis of our competitive position and recommendations for s
 Be SHORT and CONCISE (3-5 sentences maximum):
 - Use specific numbers from the analysis
 - Be factual and data-driven
+- Cite research when available (e.g., "Research shows...")
 - Professional business language
 - Direct answers only
 
@@ -305,6 +310,15 @@ NO lengthy paragraphs or unnecessary details."""
             for loc, roi in list(recommendations.items())[:5]
         ])
 
+        # Get research-backed insights from knowledge base
+        research_context = ""
+        if use_knowledge_base:
+            try:
+                kb = get_knowledge_base()
+                research_context = kb.get_context_for_llm(question, max_sources=2, include_citations=False)
+            except Exception as e:
+                logger.warning(f"Failed to load knowledge base: {e}")
+
         user_prompt = f"""Question: {question}
 
 Product: {product['name']} (${product['price']:.2f}, {product['category']}, Budget: ${product.get('budget', 'N/A')})
@@ -312,9 +326,11 @@ Product: {product['name']} (${product['price']:.2f}, {product['category']}, Budg
 Top Recommendations:
 {recommendations_text}
 
-Context: {json.dumps(context, indent=2) if context else 'Basic analysis only'}
+Analysis Context: {json.dumps(context, indent=2) if context else 'Basic analysis only'}
 
-Answer in 3-5 concise sentences with specific data points."""
+{research_context}
+
+Answer in 3-5 concise sentences with specific data points. If research is provided, reference it naturally (e.g., "Studies show...")."""
 
         return self.generate(
             prompt=user_prompt,

@@ -252,8 +252,8 @@ class AdaptiveDataManager:
         return performance
 
     def _load_product_metadata(self) -> Dict[str, Dict]:
-        """Load product metadata from archive."""
-        products_file = self.data_dir / 'archive' / 'synthetic' / 'products.json'
+        """Load product metadata from input directory."""
+        products_file = self.data_dir / 'input' / 'products.json'
 
         if not products_file.exists():
             logger.error(f"Products file not found: {products_file}")
@@ -272,8 +272,8 @@ class AdaptiveDataManager:
         }
 
     def _load_location_metadata(self) -> Dict[str, Dict]:
-        """Load location metadata from archive."""
-        locations_file = self.data_dir / 'archive' / 'synthetic' / 'locations.json'
+        """Load location metadata from input directory."""
+        locations_file = self.data_dir / 'input' / 'locations.json'
 
         if not locations_file.exists():
             logger.error(f"Locations file not found: {locations_file}")

@@ -7,16 +7,19 @@ Advanced multi-agent workflow with:
 - Error recovery and retries
 - Real-time progress streaming
 - Full observability
+- State transition logging
 """
 
 import logging
-from typing import Dict, Any, TypedDict, Annotated
+from typing import Dict, Any, TypedDict, Annotated, Optional
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
 from agents.input_agent import InputAgent
+from agents.filter_agent import LocationFilterAgent
 from agents.analyzer_agent import AnalyzerAgentV2
 from agents.explainer_agent import ExplainerAgent
 from models.schemas import ProductInput, PlacementState, Recommendation
+from utils.state_logger import get_state_logger, init_state_logger
 
 logger = logging.getLogger("OrchestratorV2")
 
@@ -53,23 +56,39 @@ class OrchestratorV2:
     - Streaming progress updates
     """
 
-    def __init__(self, data_dir: str = "data", config_dir: str = "config"):
+    def __init__(self, data_dir: str = "data", config_dir: str = "config", enable_state_logging: bool = True):
         """
         Initialize orchestrator with agents.
 
         Args:
             data_dir: Data directory path
             config_dir: Configuration directory path
+            enable_state_logging: Enable state transition logging
         """
         logger.info("Initializing LangGraph Orchestrator V2")
 
-        # Initialize agents
+        # Initialize state logger
+        self.enable_state_logging = enable_state_logging
+        if enable_state_logging:
+            self.state_logger = init_state_logger()
+        else:
+            self.state_logger = None
+
+        # Initialize agents with state logging
         self.input_agent = InputAgent()
+        self.input_agent.step_number = 1
+
+        self.filter_agent = LocationFilterAgent()
+        self.filter_agent.step_number = 2
+
         self.analyzer_agent = AnalyzerAgentV2(
             data_dir=data_dir,
             config_dir=config_dir
         )
+        self.analyzer_agent.step_number = 3
+
         self.explainer_agent = ExplainerAgent(data_dir=data_dir)
+        self.explainer_agent.step_number = 4
 
         # Build workflow graph
         self.workflow = self._build_workflow()
@@ -88,6 +107,7 @@ class OrchestratorV2:
 
         # Add nodes
         workflow.add_node("validate_input", self._validate_input_node)
+        workflow.add_node("filter_locations", self._filter_locations_node)
         workflow.add_node("check_data_quality", self._check_data_quality_node)
         workflow.add_node("analyze_roi", self._analyze_roi_node)
         workflow.add_node("explain", self._explain_node)
@@ -96,17 +116,20 @@ class OrchestratorV2:
         # Define edges
         workflow.set_entry_point("validate_input")
 
-        # From validation
+        # From validation → filter
         workflow.add_conditional_edges(
             "validate_input",
             self._should_continue_from_validation,
             {
-                "continue": "check_data_quality",
+                "continue": "filter_locations",
                 "error": "handle_error"
             }
         )
 
-        # From data quality check
+        # From filter → data quality check
+        workflow.add_edge("filter_locations", "check_data_quality")
+
+        # From data quality check → analysis
         workflow.add_conditional_edges(
             "check_data_quality",
             self._route_based_on_quality,
@@ -155,8 +178,11 @@ class OrchestratorV2:
             # Create PlacementState
             placement_state = PlacementState(product=product_input)
 
-            # Run validation
-            placement_state = self.input_agent.execute(placement_state)
+            # Run validation with state logging
+            placement_state = self.input_agent.execute_with_logging(placement_state)
+
+            # Load locations from analyzer agent (needed for filtering)
+            placement_state.locations = self.analyzer_agent.locations
 
             state['placement_state'] = placement_state
             state['step'] = 'validated'
@@ -172,6 +198,38 @@ class OrchestratorV2:
 
         return state
 
+    def _filter_locations_node(self, state: WorkflowState) -> WorkflowState:
+        """
+        Node: Filter out illogical product-location combinations.
+
+        Args:
+            state: Current workflow state
+
+        Returns:
+            Updated state
+        """
+        logger.info("[STEP 2/5] Filtering illogical placements...")
+
+        try:
+            placement_state = state['placement_state']
+
+            # Run filter agent with state logging
+            placement_state = self.filter_agent.execute_with_logging(placement_state)
+
+            state['placement_state'] = placement_state
+            state['warnings'].extend(placement_state.warnings)
+            state['step'] = 'filtered'
+
+            logger.info(f"✓ Location filtering complete: {len(placement_state.locations)} valid locations")
+
+        except Exception as e:
+            logger.error(f"✗ Location filtering error: {e}")
+            # Don't fail the whole workflow, just warn
+            state['warnings'].append(f"Location filtering failed: {e}")
+            state['step'] = 'filter_warning'
+
+        return state
+
     def _check_data_quality_node(self, state: WorkflowState) -> WorkflowState:
         """
         Node: Check data quality and decide routing.
@@ -182,7 +240,7 @@ class OrchestratorV2:
         Returns:
             Updated state
         """
-        logger.info("[STEP 2/4] Checking data quality...")
+        logger.info("[STEP 3/5] Checking data quality...")
 
         # Check if data manager has sufficient data
         if self.analyzer_agent.data_manager:
@@ -215,13 +273,13 @@ class OrchestratorV2:
         Returns:
             Updated state
         """
-        logger.info("[STEP 3/4] Analyzing ROI...")
+        logger.info("[STEP 4/5] Analyzing ROI...")
 
         try:
             placement_state = state['placement_state']
 
-            # Run analysis
-            placement_state = self.analyzer_agent.execute(placement_state)
+            # Run analysis with state logging
+            placement_state = self.analyzer_agent.execute_with_logging(placement_state)
 
             state['placement_state'] = placement_state
             state['errors'].extend(placement_state.errors)
@@ -251,13 +309,13 @@ class OrchestratorV2:
         Returns:
             Updated state
         """
-        logger.info("[STEP 4/4] Generating explanations...")
+        logger.info("[STEP 5/5] Generating explanations...")
 
         try:
             placement_state = state['placement_state']
 
-            # Generate explanation
-            placement_state = self.explainer_agent.execute(placement_state)
+            # Generate explanation with state logging
+            placement_state = self.explainer_agent.execute_with_logging(placement_state)
 
             state['placement_state'] = placement_state
             state['step'] = 'complete'
@@ -329,12 +387,13 @@ class OrchestratorV2:
 
     # Public API
 
-    def execute(self, product_input: ProductInput) -> Recommendation:
+    def execute(self, product_input: ProductInput, session_id: Optional[str] = None) -> Recommendation:
         """
         Execute workflow (backward compatible API).
 
         Args:
             product_input: Product input
+            session_id: Optional session ID for state logging
 
         Returns:
             Recommendation object
@@ -342,6 +401,11 @@ class OrchestratorV2:
         logger.info("=" * 80)
         logger.info("STARTING LANGGRAPH WORKFLOW")
         logger.info("=" * 80)
+
+        # Start state logging session if enabled
+        if self.state_logger and session_id:
+            self.state_logger.start_session(session_id)
+            logger.info(f"✓ State logging enabled for session: {session_id}")
 
         # Convert to dict for LangGraph
         initial_state = {
@@ -382,10 +446,31 @@ class OrchestratorV2:
                 for warning in final_state['warnings']:
                     logger.warning(f"  - {warning}")
 
+            # End state logging session
+            if self.state_logger and session_id:
+                summary = {
+                    "status": "success",
+                    "top_recommendation": list(recommendation.recommendations.keys())[0] if recommendation.recommendations else None,
+                    "recommendations_count": len(recommendation.recommendations),
+                    "errors_count": len(final_state['errors']),
+                    "warnings_count": len(final_state['warnings'])
+                }
+                self.state_logger.end_session(summary=summary)
+                logger.info(f"✓ State logging completed for session: {session_id}")
+
             return recommendation
 
         except Exception as e:
             logger.error(f"Workflow execution failed: {e}")
+
+            # End state logging session with error
+            if self.state_logger and session_id:
+                summary = {
+                    "status": "error",
+                    "error": str(e)
+                }
+                self.state_logger.end_session(summary=summary)
+
             raise
 
     def get_status(self) -> Dict[str, Any]:
@@ -400,11 +485,13 @@ class OrchestratorV2:
             'orchestration': 'langgraph',
             'agents': [
                 {'name': self.input_agent.name, 'description': self.input_agent.description},
+                {'name': self.filter_agent.name, 'description': self.filter_agent.description},
                 {'name': self.analyzer_agent.name, 'description': self.analyzer_agent.description},
                 {'name': self.explainer_agent.name, 'description': self.explainer_agent.description}
             ],
             'data_manager_active': self.analyzer_agent.data_manager is not None,
             'locations_loaded': len(self.analyzer_agent.locations),
+            'llm_filtering_enabled': self.filter_agent.llm_client is not None and self.filter_agent.llm_client.enabled,
         }
 
 

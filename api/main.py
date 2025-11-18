@@ -284,8 +284,12 @@ async def analyze_placement(request: AnalyzeRequest):
             expected_roi=request.expected_roi
         )
 
-        # Execute workflow
-        result = orchestrator.execute(product_input)
+        # Generate session ID first (so we can use it for state logging)
+        import uuid
+        session_id = str(uuid.uuid4())
+
+        # Execute workflow with state logging
+        result = orchestrator.execute(product_input, session_id=session_id)
 
         if not result.recommendations:
             raise HTTPException(
@@ -311,7 +315,6 @@ async def analyze_placement(request: AnalyzeRequest):
             explanation_dict = {}
 
         # Store session (both recommendation and product input)
-        session_id = result.session_id
         session_store[session_id] = {
             'recommendation': result,
             'product_input': product_input
@@ -366,7 +369,7 @@ async def defend_recommendation(request: DefendRequest):
         product_input = session_data['product_input']
 
         # Use LLM to generate intelligent answer based on context
-        answer = _answer_question_with_llm(recommendation, product_input, request.question)
+        answer = _answer_question_with_llm(recommendation, product_input, request.question, session_data)
 
         response = DefendResponse(
             answer=answer,
@@ -507,7 +510,7 @@ def _generate_simple_explanation(result) -> Dict[str, Any]:
     return explanation
 
 
-def _answer_question_with_llm(recommendation, product_input: ProductInput, question: str) -> str:
+def _answer_question_with_llm(recommendation, product_input: ProductInput, question: str, session_data: dict) -> str:
     """Answer user questions using LLM with full context"""
 
     # Try to use LLM first
@@ -526,12 +529,32 @@ def _answer_question_with_llm(recommendation, product_input: ProductInput, quest
                 'expected_roi': product_input.expected_roi
             }
 
+            # Prepare full context with ROI predictions (including placement costs)
+            full_context = {
+                'explanation': recommendation.explanation.model_dump() if recommendation.explanation else {},
+                'roi_predictions': {}
+            }
+
+            # Extract ROI predictions from stored session
+            if hasattr(session_data['recommendation'], 'roi_predictions'):
+                # Convert ROI predictions to dict format for LLM
+                roi_preds = session_data['recommendation'].roi_predictions
+                if roi_preds:
+                    full_context['roi_predictions'] = {
+                        loc: {
+                            'roi': pred.roi,
+                            'placement_cost': pred.placement_cost,
+                            'confidence_interval': pred.confidence_interval
+                        }
+                        for loc, pred in roi_preds.items()
+                    }
+
             # Use the existing answer_followup_question method
             answer = llm_client.answer_followup_question(
                 question=question,
                 product=product_context,
                 recommendations=recommendation.recommendations,
-                context={'explanation': recommendation.explanation.model_dump() if recommendation.explanation else {}}
+                context=full_context
             )
 
             if answer and answer.strip() and "error" not in answer.lower():
@@ -549,6 +572,43 @@ def _answer_question_fallback(recommendation, product_input: ProductInput, quest
     question_lower = question.lower()
 
     # Pattern matching for common questions
+
+    # Placement cost/fee questions
+    if ("cost" in question_lower or "fee" in question_lower or "price" in question_lower) and "placement" in question_lower:
+        # Get placement costs from ROI predictions
+        if hasattr(recommendation, 'roi_predictions') and recommendation.roi_predictions:
+            # Check if asking about specific location
+            mentioned_location = None
+            for loc_name in recommendation.roi_predictions.keys():
+                if loc_name.lower() in question_lower:
+                    mentioned_location = loc_name
+                    break
+
+            # Default to top location if not specified
+            if not mentioned_location:
+                mentioned_location = list(recommendation.recommendations.keys())[0]
+
+            if mentioned_location in recommendation.roi_predictions:
+                pred = recommendation.roi_predictions[mentioned_location]
+                roi = pred.roi
+                cost = pred.placement_cost
+
+                answer = f"**Placement Cost for {mentioned_location}:**\n\n"
+                answer += f"**Cost**: ${cost:,.2f} for a 4-week placement period\n"
+                answer += f"**ROI**: {roi:.2f}x return on investment\n"
+                answer += f"**Expected Return**: ${cost * roi:,.2f}\n\n"
+                answer += f"This investment is justified by:\n"
+                answer += f"- High visibility location with proven performance\n"
+                answer += f"- Category-specific lift factors for {product_input.category} products\n"
+                answer += f"- Historical data showing {roi:.2f}x average returns\n"
+                answer += f"- Within your budget of ${product_input.budget:,.2f}\n"
+
+                return answer
+
+        # Fallback if no ROI predictions available
+        top_location = list(recommendation.recommendations.keys())[0]
+        return f"The placement cost for {top_location} fits within your ${product_input.budget:,.2f} budget. Contact your retail partner for exact pricing."
+
     if "why" in question_lower and ("recommend" in question_lower or "best" in question_lower or "choice" in question_lower or "location" in question_lower):
         # Why was X recommended?
         top_location = list(recommendation.recommendations.keys())[0]

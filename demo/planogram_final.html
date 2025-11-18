@@ -1072,25 +1072,28 @@
         let selectedLocation = null;
         let chatHistory = []; // Track conversation history
 
-        // Store location definitions - Arranged like a real store layout
+        // Store location definitions - MUST match backend location names exactly
+        // Backend locations from data/archive/synthetic/locations.json
         const storeLocationMap = {
             // Front of store - Entrance area (bottom)
-            'Main Entrance Display': { id: 'L001', x: 280, y: 400, width: 180, height: 80, zone: 'Entrance' },
+            'Main Entrance Display': { id: 'L002', x: 280, y: 400, width: 180, height: 80, zone: 'Main Entrance' },
 
             // Checkout lanes (near entrance)
-            'Checkout Lane 1': { id: 'L002', x: 50, y: 400, width: 100, height: 80, zone: 'Checkout' },
-            'Checkout Lane 2': { id: 'L003', x: 480, y: 400, width: 100, height: 80, zone: 'Checkout' },
-            'Checkout Lane 3': { id: 'L004', x: 600, y: 400, width: 100, height: 80, zone: 'Checkout' },
+            'Checkout Lane 1': { id: 'L003', x: 50, y: 400, width: 100, height: 80, zone: 'Checkout' },
 
             // Middle section - Main aisles (eye level)
-            'Beverages Aisle - Eye Level': { id: 'L005', x: 50, y: 250, width: 180, height: 120, zone: 'Eye Level' },
-            'Snacks Aisle - Eye Level': { id: 'L006', x: 260, y: 250, width: 180, height: 120, zone: 'Eye Level' },
-            'Dairy Aisle - Eye Level': { id: 'L007', x: 470, y: 250, width: 180, height: 120, zone: 'Eye Level' },
+            'Beverage Aisle - Eye Level': { id: 'L004', x: 50, y: 250, width: 180, height: 120, zone: 'Eye Level' },
+            'Snack Aisle - Eye Level': { id: 'L005', x: 260, y: 250, width: 180, height: 120, zone: 'Eye Level' },
+            'Beverage Aisle - Bottom': { id: 'L010', x: 50, y: 130, width: 180, height: 100, zone: 'Bottom Shelf' },
+
+            // Regular sections
+            'Dairy Section - Regular': { id: 'L006', x: 470, y: 250, width: 180, height: 120, zone: 'Regular Shelf' },
+            'Personal Care Aisle': { id: 'L009', x: 470, y: 130, width: 180, height: 100, zone: 'Regular Shelf' },
 
             // Back of store - Endcaps and specialty areas
-            'Beverages End Cap': { id: 'L008', x: 50, y: 30, width: 140, height: 180, zone: 'End Cap' },
-            'Snacks End Cap': { id: 'L009', x: 300, y: 30, width: 140, height: 180, zone: 'End Cap' },
-            'Bakery Section': { id: 'L010', x: 550, y: 30, width: 150, height: 180, zone: 'Specialty' }
+            'End Cap 1 - Beverages': { id: 'L001', x: 50, y: 30, width: 140, height: 80, zone: 'End Cap' },
+            'End Cap 2 - Snacks': { id: 'L008', x: 300, y: 30, width: 140, height: 80, zone: 'End Cap' },
+            'Bakery Display': { id: 'L007', x: 700, y: 30, width: 150, height: 450, zone: 'Bakery' }
         };
 
         // Initialize planogram with locations

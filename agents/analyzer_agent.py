@@ -80,8 +80,8 @@ class AnalyzerAgentV2(BaseAgent):
             self.data_manager = None
 
     def _load_locations(self):
-        """Load location metadata from defaults."""
-        locations_file = self.data_dir / "archive" / "synthetic" / "locations.json"
+        """Load location metadata from input directory."""
+        locations_file = self.data_dir / "input" / "locations.json"
 
         if not locations_file.exists():
             self.logger.error(f"Locations file not found: {locations_file}")
@@ -127,13 +127,16 @@ class AnalyzerAgentV2(BaseAgent):
         product = state.product
         self.log_info(f"Analyzing placement options for {product.product_name}")
 
-        # Store locations in state
-        state.locations = self.locations
+        # Use filtered locations from state if available, otherwise use all locations
+        locations_to_analyze = state.locations if state.locations else self.locations
+
+        # Update state with locations being analyzed
+        state.locations = locations_to_analyze
 
         # Calculate ROI for each location
         roi_predictions: Dict[str, ROIPrediction] = {}
 
-        for location in self.locations:
+        for location in locations_to_analyze:
             # Calculate ROI with transparency
             roi_result = self._calculate_roi_transparent(product, location)
 
@@ -231,11 +234,57 @@ class AnalyzerAgentV2(BaseAgent):
         # Price tier consideration
         price_tier_multiplier = 1.0
         if product.price > 5.0:  # Premium product
-            if location.zone in ['endcap', 'eye_level']:
+            if location.zone in ['End Cap', 'Eye Level', 'endcap', 'eye_level']:
                 price_tier_multiplier = 1.1
         elif product.price < 2.0:  # Budget product
-            if location.zone in ['low_shelf']:
+            if location.zone in ['Bottom Shelf', 'low_shelf']:
                 price_tier_multiplier = 1.05
+
+        # Category-location affinity with STRICT penalties for mismatches
+        affinity_multiplier = 1.0
+        location_name_lower = location.name.lower()
+        product_category_lower = product.category.lower()
+
+        # Strong affinity: Product category matches location category
+        if product_category_lower in location_name_lower:
+            affinity_multiplier = 1.15  # 15% boost for matching category
+        else:
+            # STRICT MISMATCH PENALTIES - Prevent irrelevant recommendations
+
+            # Severe penalty: Food categories in Personal Care (or vice versa)
+            food_categories = ['beverage', 'snack', 'dairy', 'bakery']
+            personal_care_keywords = ['personal care', 'cosmetic', 'beauty', 'hygiene']
+
+            is_food_product = any(cat in product_category_lower for cat in food_categories)
+            is_personal_care_product = any(term in product_category_lower for term in personal_care_keywords)
+
+            location_is_personal_care = any(term in location_name_lower for term in personal_care_keywords)
+            location_is_food = any(cat in location_name_lower for cat in food_categories)
+
+            # Checkout and Main Entrance are exceptions (impulse buying)
+            is_impulse_location = location.zone in ['Checkout', 'Main Entrance']
+
+            if not is_impulse_location:
+                # Food product in Personal Care location = 70% penalty
+                if is_food_product and location_is_personal_care:
+                    affinity_multiplier = 0.30  # Severe penalty
+                # Personal Care product in Food location = 70% penalty
+                elif is_personal_care_product and location_is_food:
+                    affinity_multiplier = 0.30  # Severe penalty
+                # Different food categories mixed = 50% penalty
+                elif is_food_product:
+                    for food_cat in food_categories:
+                        if food_cat in product_category_lower:
+                            # Check if location is a different food category
+                            other_food_cats = [c for c in food_categories if c != food_cat]
+                            if any(other_cat in location_name_lower for other_cat in other_food_cats):
+                                affinity_multiplier = 0.50  # Moderate penalty
+                                break
+
+            # Generic high-traffic locations with no category match = mild penalty
+            if affinity_multiplier == 1.0 and is_impulse_location:
+                if product_category_lower not in location_name_lower:
+                    affinity_multiplier = 0.95  # Small penalty for generic locations
 
         # Calculate final ROI
         roi = (
@@ -243,7 +292,8 @@ class AnalyzerAgentV2(BaseAgent):
             visibility_multiplier *
             (1 + traffic_boost) *
             category_multiplier *
-            price_tier_multiplier
+            price_tier_multiplier *
+            affinity_multiplier
         )
 
         # Add realistic noise (±5%)
