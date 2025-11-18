@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Placement Optimizer - Planogram View</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 320px 1fr 380px;
+            gap: 15px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 8px;
+            font-size: 1.3em;
+        }
+
+        /* Product Form */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 9px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Planogram Panel */
+        #planogramPanel {
+            position: relative;
+            min-height: 550px;
+        }
+
+        #planogramPanel p {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        #store-map {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            border-radius: 10px;
+            border: 3px solid #cbd5e1;
+            overflow: auto;
+            /* Ensure content is scrollable */
+            min-width: 320px;
+        }
+
+        /* Inner wrapper for planogram content */
+        .planogram-wrapper {
+            position: relative;
+            min-width: 750px; /* Ensure all shelves are visible */
+            min-height: 500px;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Store section labels */
+        .store-label {
+            position: absolute;
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* Shelf Locations */
+        .shelf-location {
+            position: absolute;
+            background: white;
+            border: 3px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .shelf-location:hover {
+            transform: scale(1.08);
+            z-index: 10;
+            border-color: #667eea;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .shelf-location.selected {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            border-width: 4px;
+            box-shadow: 0 0 25px rgba(33, 150, 243, 0.6);
+            z-index: 15;
+        }
+
+        .shelf-location.top-recommendation {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-color: #ff9800;
+            border-width: 4px;
+            animation: pulse 2s infinite;
+            z-index: 12;
+            color: #d84315;
+        }
+
+        .shelf-location.recommended {
+            background: linear-gradient(135deg, #81c784 0%, #66bb6a 100%);
+            border-color: #4caf50;
+            border-width: 3px;
+            z-index: 11;
+            color: #1b5e20;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            }
+            50% {
+                box-shadow: 0 0 35px rgba(255, 215, 0, 1);
+            }
+        }
+
+        .roi-badge {
+            margin-top: 6px;
+            padding: 4px 10px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .shelf-location.top-recommendation .roi-badge {
+            background: #d84315;
+        }
+
+        .shelf-location.recommended .roi-badge {
+            background: #2e7d32;
+        }
+
+        .zone-label {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 3px;
+        }
+
+        /* Recommendations Panel */
+        .recommendations-list {
+            list-style: none;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .recommendation-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .recommendation-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .recommendation-item.top {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe6cc 100%);
+            border-left-color: #ff9800;
+        }
+
+        .recommendation-item .location-name {
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .recommendation-item .roi-score {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .recommendation-item .zone-type {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Chat Section */
+        .chat-section {
+            margin-top: 15px;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 15px;
+        }
+
+        .chat-section h3 {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        #selectedLocationInfo {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1976d2;
+        }
+
+        #chatMessages {
+            height: 250px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .chat-message {
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            max-width: 90%;
+        }
+
+        .chat-message.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+        }
+
+        .chat-message.assistant {
+            background: white;
+            border: 2px solid #e0e0e0;
+            color: #333;
+        }
+
+        .message-sender {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        #chatInput {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        #chatInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .empty-message {
+            color: #999;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        /* Shelf Detail Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 1100px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5em;
+            margin: 0;
+        }
+
+        .close-modal {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .shelf-info {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .shelf-rows-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Shelf Unit Container */
+        .shelf-unit-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            height: 600px;
+            background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-radius: 12px;
+            padding: 30px 20px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        /* Vertical support posts */
+        .shelf-post {
+            position: absolute;
+            width: 25px;
+            height: 100%;
+            background: linear-gradient(90deg, #64748b 0%, #475569 50%, #64748b 100%);
+            box-shadow: inset 2px 0 5px rgba(0,0,0,0.2), inset -2px 0 5px rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+
+        .shelf-post.left {
+            left: 40px;
+        }
+
+        .shelf-post.right {
+            right: 40px;
+        }
+
+        /* Individual shelf plank */
+        .shelf-plank {
+            position: absolute;
+            left: 35px;
+            right: 35px;
+            height: 80px;
+            background: linear-gradient(180deg, #8b7355 0%, #6b5a45 50%, #5a4a38 100%);
+            border: 3px solid #4a3a28;
+            border-radius: 8px;
+            box-shadow:
+                0 8px 15px rgba(0,0,0,0.3),
+                inset 0 2px 3px rgba(255,255,255,0.2),
+                inset 0 -2px 3px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            overflow: visible;
+        }
+
+        .shelf-plank::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: -6px;
+            height: 6px;
+            background: linear-gradient(180deg, #a89070 0%, #8b7355 100%);
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+        }
+
+        .shelf-plank:hover {
+            transform: scale(1.02);
+            box-shadow:
+                0 12px 25px rgba(0,0,0,0.4),
+                inset 0 2px 3px rgba(255,255,255,0.3),
+                0 0 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .shelf-plank.high-roi {
+            border-color: #10b981;
+            background: linear-gradient(180deg, #6ee7b7 0%, #10b981 50%, #059669 100%);
+        }
+
+        .shelf-plank.medium-roi {
+            border-color: #3b82f6;
+            background: linear-gradient(180deg, #93c5fd 0%, #3b82f6 50%, #2563eb 100%);
+        }
+
+        .shelf-plank.low-roi {
+            border-color: #f59e0b;
+            background: linear-gradient(180deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%);
+        }
+
+        /* Shelf content layout */
+        .shelf-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            z-index: 1;
+            position: relative;
+        }
+
+        .shelf-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            flex: 1;
+        }
+
+        .shelf-roi-display {
+            font-size: 24px;
+            font-weight: 900;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            margin: 0 20px;
+        }
+
+        .shelf-metrics {
+            display: flex;
+            gap: 15px;
+            font-size: 11px;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .shelf-metric {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .shelf-metric-value {
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        /* Dedicated info panel container below shelf unit */
+        .shelf-details-container {
+            width: 100%;
+            margin-top: 20px;
+            min-height: 200px;
+            background: white;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .shelf-details-placeholder {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .shelf-details-content {
+            display: none;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .shelf-details-content.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .shelf-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .shelf-detail-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .shelf-detail-roi-badge {
+            font-size: 1.8em;
+            font-weight: 900;
+            padding: 8px 20px;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .shelf-detail-roi-badge.high {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .shelf-detail-roi-badge.medium {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .shelf-detail-roi-badge.low {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .shelf-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        /* Visual indicator on shelf plank */
+        .shelf-plank {
+            position: relative;
+        }
+
+        .shelf-plank::after {
+            content: '👆 Click for details';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .shelf-plank:hover::after {
+            opacity: 1;
+        }
+
+        .shelf-plank.selected {
+            border-width: 4px;
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .shelf-plank.selected::after {
+            content: '✓ Selected';
+            opacity: 1;
+            color: white;
+            font-weight: 700;
+        }
+
+        .info-section {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 6px;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .info-section strong {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .info-section.impact {
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .info-section.impact strong {
+            color: #10b981;
+        }
+
+        .info-section.behavior {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .info-section.behavior strong {
+            color: #3b82f6;
+        }
+
+        .info-section.bestfor {
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .info-section.bestfor strong {
+            color: #f59e0b;
+        }
+
+        .research-citation {
+            font-size: 9px;
+            color: #64748b;
+            font-style: italic;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1600px) {
+            .main-content {
+                grid-template-columns: 300px 1fr 350px;
+            }
+        }
+
+        @media (max-width: 1400px) {
+            .main-content {
+                grid-template-columns: 280px 1fr 320px;
+            }
+
+            #store-map {
+                height: 450px;
+            }
+
+            /* Adjust info panel for smaller screens */
+            .shelf-info-panel {
+                width: 280px;
+                font-size: 10px;
+            }
+
+            .modal-content {
+                max-width: 95%;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            #planogramPanel {
+                order: 2;
+            }
+
+            #store-map {
+                height: 400px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .modal-content {
+                width: 98%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .panel {
+                padding: 15px;
+            }
+
+            #store-map {
+                height: 350px;
+            }
+
+            .chat-section {
+                display: none; /* Hide chat on mobile for simplicity */
+            }
+
+            .modal-body {
+                padding: 15px;
+            }
+
+            .modal-content {
+                width: 100%;
+                max-width: 100vw;
+                border-radius: 0;
+            }
+
+            .shelf-unit-container {
+                height: 500px;
+                padding: 20px 10px;
+            }
+
+            .shelf-plank {
+                left: 20px;
+                right: 20px;
+                height: 70px;
+                padding: 0 10px;
+            }
+
+            .shelf-post {
+                width: 20px;
+            }
+
+            .shelf-post.left {
+                left: 25px;
+            }
+
+            .shelf-post.right {
+                right: 25px;
+            }
+
+            .shelf-label {
+                font-size: 10px;
+            }
+
+            .shelf-roi-display {
+                font-size: 16px;
+                margin: 0 10px;
+            }
+
+            .shelf-metrics {
+                font-size: 8px;
+                gap: 8px;
+            }
+
+            .shelf-metric-value {
+                font-size: 11px;
+            }
+
+            .shelf-details-container {
+                padding: 15px;
+            }
+
+            .shelf-detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .shelf-detail-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .shelf-detail-roi-badge {
+                font-size: 1.3em;
+                padding: 6px 15px;
+            }
+
+            .info-section {
+                padding: 10px;
+                margin-bottom: 10px;
+                font-size: 12px;
+            }
+
+            .shelf-plank::after {
+                font-size: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 Retail Placement Optimizer</h1>
+            <p>AI-Powered Product Placement Analysis with Interactive Planogram</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Panel: Product Form -->
+            <div class="panel">
+                <h2>📦 Product Details</h2>
+                <form id="productForm">
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <input type="text" id="productName" value="Premium Energy Drink" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="Beverages" selected>Beverages</option>
+                            <option value="Snacks">Snacks</option>
+                            <option value="Dairy">Dairy</option>
+                            <option value="Bakery">Bakery</option>
+                            <option value="Personal Care">Personal Care</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Price ($)</label>
+                        <input type="number" id="price" value="2.99" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="budget">Budget ($)</label>
+                        <input type="number" id="budget" value="5000" step="100" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetSales">Target Sales (units)</label>
+                        <input type="number" id="targetSales" value="1000" step="10" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetCustomers">Target Customers</label>
+                        <input type="text" id="targetCustomers" value="Young adults 18-35" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expectedROI">Expected ROI</label>
+                        <input type="number" id="expectedROI" value="1.5" step="0.1" min="0" required>
+                    </div>
+
+                    <button type="submit" class="analyze-btn">🎯 Analyze Placement</button>
+                </form>
+            </div>
+
+            <!-- Middle Panel: Store Planogram -->
+            <div class="panel" id="planogramPanel">
+                <h2>🗺️ Store Planogram</h2>
+                <p>Click on any location to view details and chat about placement strategy</p>
+                <div id="store-map"></div>
+            </div>
+
+            <!-- Right Panel: Recommendations & Chat -->
+            <div class="panel">
+                <h2>📊 Recommendations</h2>
+                <div id="recommendationsContainer">
+                    <p class="empty-message">Submit product details to see recommendations</p>
+                </div>
+
+                <!-- Chat Section -->
+                <div class="chat-section" id="chatSection" style="display: none;">
+                    <h3>💬 Location Insights Chat</h3>
+                    <div id="selectedLocationInfo"></div>
+                    <div id="chatMessages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chatInput" placeholder="Ask about this location..." />
+                        <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shelf Detail Modal -->
+    <div id="shelfDetailModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalLocationName">Location Details</h2>
+                <button class="close-modal" onclick="closeShelfDetail()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="shelf-info" id="shelfOverallInfo"></div>
+                <div id="modalBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        let currentRecommendations = [];
+        let currentSessionId = null;
+        let selectedLocation = null;
+        let chatHistory = []; // Track conversation history
+
+        // Store location definitions - Arranged like a real store layout
+        const storeLocationMap = {
+            // Front of store - Entrance area (bottom)
+            'Main Entrance Display': { id: 'L001', x: 280, y: 400, width: 180, height: 80, zone: 'Entrance' },
+
+            // Checkout lanes (near entrance)
+            'Checkout Lane 1': { id: 'L002', x: 50, y: 400, width: 100, height: 80, zone: 'Checkout' },
+            'Checkout Lane 2': { id: 'L003', x: 480, y: 400, width: 100, height: 80, zone: 'Checkout' },
+            'Checkout Lane 3': { id: 'L004', x: 600, y: 400, width: 100, height: 80, zone: 'Checkout' },
+
+            // Middle section - Main aisles (eye level)
+            'Beverages Aisle - Eye Level': { id: 'L005', x: 50, y: 250, width: 180, height: 120, zone: 'Eye Level' },
+            'Snacks Aisle - Eye Level': { id: 'L006', x: 260, y: 250, width: 180, height: 120, zone: 'Eye Level' },
+            'Dairy Aisle - Eye Level': { id: 'L007', x: 470, y: 250, width: 180, height: 120, zone: 'Eye Level' },
+
+            // Back of store - Endcaps and specialty areas
+            'Beverages End Cap': { id: 'L008', x: 50, y: 30, width: 140, height: 180, zone: 'End Cap' },
+            'Snacks End Cap': { id: 'L009', x: 300, y: 30, width: 140, height: 180, zone: 'End Cap' },
+            'Bakery Section': { id: 'L010', x: 550, y: 30, width: 150, height: 180, zone: 'Specialty' }
+        };
+
+        // Initialize planogram with locations
+        function initializePlanogram() {
+            const map = document.getElementById('store-map');
+            map.innerHTML = '';
+
+            // Create wrapper div to ensure proper scrolling
+            const wrapper = document.createElement('div');
+            wrapper.className = 'planogram-wrapper';
+
+            // Add grid background
+            const grid = document.createElement('div');
+            grid.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-image:
+                    repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(0,0,0,0.03) 49px, rgba(0,0,0,0.03) 50px),
+                    repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(0,0,0,0.03) 49px, rgba(0,0,0,0.03) 50px);
+                pointer-events: none;
+            `;
+            wrapper.appendChild(grid);
+
+            // Add store section labels
+            const labels = [
+                { text: '← BACK OF STORE', x: 350, y: 10, style: 'text-align: center;' },
+                { text: '← MAIN AISLES', x: 350, y: 230, style: 'text-align: center;' },
+                { text: '🚪 ENTRANCE →', x: 160, y: 485, style: 'font-size: 13px; color: #10b981;' }
+            ];
+
+            labels.forEach(label => {
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'store-label';
+                labelDiv.style.left = label.x + 'px';
+                labelDiv.style.top = label.y + 'px';
+                labelDiv.style.cssText += label.style;
+                labelDiv.textContent = label.text;
+                wrapper.appendChild(labelDiv);
+            });
+
+            // Add shelf locations
+            Object.entries(storeLocationMap).forEach(([key, loc]) => {
+                const shelf = document.createElement('div');
+                shelf.className = 'shelf-location';
+                shelf.id = loc.id;
+                shelf.style.left = loc.x + 'px';
+                shelf.style.top = loc.y + 'px';
+                shelf.style.width = loc.width + 'px';
+                shelf.style.height = loc.height + 'px';
+
+                shelf.innerHTML = `
+                    <div>${key}</div>
+                    <div class="zone-label">${loc.zone}</div>
+                    <div class="roi-badge">--</div>
+                `;
+
+                shelf.dataset.location = key;
+                shelf.dataset.zone = loc.zone;
+                shelf.onclick = () => selectLocation(key, loc);
+
+                wrapper.appendChild(shelf);
+            });
+
+            map.appendChild(wrapper);
+        }
+
+        // Handle form submission
+        document.getElementById('productForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const productData = {
+                product_name: document.getElementById('productName').value,
+                category: document.getElementById('category').value,
+                price: parseFloat(document.getElementById('price').value),
+                budget: parseFloat(document.getElementById('budget').value),
+                target_sales: parseInt(document.getElementById('targetSales').value),
+                target_customers: document.getElementById('targetCustomers').value,
+                expected_roi: parseFloat(document.getElementById('expectedROI').value)
+            };
+
+            document.getElementById('recommendationsContainer').innerHTML = '<div class="loading">🤖 Analyzing placements...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(productData)
+                });
+
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const data = await response.json();
+                currentSessionId = data.session_id;
+
+                // Transform recommendations
+                currentRecommendations = Object.entries(data.recommendations || {})
+                    .map(([location, roi]) => ({ location, roi }))
+                    .sort((a, b) => b.roi - a.roi);
+
+                displayRecommendationsList(currentRecommendations);
+                highlightLocationsOnPlanogram(currentRecommendations);
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('recommendationsContainer').innerHTML =
+                    `<p style="color: #d32f2f; padding: 20px; text-align: center;">
+                        ❌ Error: ${error.message}<br>
+                        <small>Make sure the API server is running on port 8000</small>
+                    </p>`;
+            }
+        });
+
+        // Display recommendations list
+        function displayRecommendationsList(recommendations) {
+            if (recommendations.length === 0) {
+                document.getElementById('recommendationsContainer').innerHTML =
+                    '<p class="empty-message">No suitable locations found within budget</p>';
+                return;
+            }
+
+            let html = '<ul class="recommendations-list">';
+            recommendations.forEach((rec, index) => {
+                const isTop = index === 0;
+                html += `
+                    <li class="recommendation-item ${isTop ? 'top' : ''}" onclick="scrollToLocation('${rec.location}')">
+                        <div class="location-name">${rec.location} ${isTop ? '🏆' : ''}</div>
+                        <div class="roi-score">ROI: ${rec.roi.toFixed(2)}x</div>
+                        <div class="zone-type">${storeLocationMap[rec.location]?.zone || 'Standard'}</div>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+
+            document.getElementById('recommendationsContainer').innerHTML = html;
+        }
+
+        // Highlight locations on planogram
+        function highlightLocationsOnPlanogram(recommendations) {
+            // Clear previous highlights
+            document.querySelectorAll('.shelf-location').forEach(shelf => {
+                shelf.classList.remove('top-recommendation', 'recommended');
+                const badge = shelf.querySelector('.roi-badge');
+                badge.textContent = '--';
+            });
+
+            // Apply new highlights
+            recommendations.forEach((rec, index) => {
+                const shelf = document.querySelector(`[data-location="${rec.location}"]`);
+                if (shelf) {
+                    if (index === 0) {
+                        shelf.classList.add('top-recommendation');
+                    } else if (index < 5) {
+                        shelf.classList.add('recommended');
+                    }
+
+                    const badge = shelf.querySelector('.roi-badge');
+                    badge.textContent = `${rec.roi.toFixed(2)}x`;
+                }
+            });
+        }
+
+        // Select location
+        function selectLocation(locationName, locationData) {
+            selectedLocation = locationName;
+
+            // Reset chat history for new location
+            chatHistory = [];
+
+            // Update visual selection
+            document.querySelectorAll('.shelf-location').forEach(s => s.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+
+            // Open shelf detail modal to show rows
+            openShelfDetail(locationName, locationData.id);
+
+            // Also show chat section for general location questions
+            document.getElementById('chatSection').style.display = 'block';
+            document.getElementById('selectedLocationInfo').textContent = `Selected: ${locationName}`;
+
+            // Clear chat
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="chat-message assistant">
+                    <div class="message-sender">AI Consultant</div>
+                    <div>You've selected ${locationName}. Ask me anything about this placement!</div>
+                </div>
+            `;
+        }
+
+        // Scroll to location on planogram
+        function scrollToLocation(locationName) {
+            const shelf = document.querySelector(`[data-location="${locationName}"]`);
+            if (shelf) {
+                shelf.click();
+                shelf.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // Send chat message
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message || !currentSessionId) return;
+
+            addChatMessage('user', message);
+            input.value = '';
+
+            // Add loading indicator
+            const loadingMsg = addChatMessage('assistant', '💭 Thinking...');
+
+            // Build conversation history context
+            let historyContext = '';
+            if (chatHistory.length > 0) {
+                historyContext = '\n\nPrevious conversation:\n';
+                chatHistory.slice(-3).forEach(exchange => { // Last 3 exchanges for context
+                    historyContext += `Q: ${exchange.question}\nA: ${exchange.answer}\n`;
+                });
+                historyContext += '\nIMPORTANT: Provide a NEW, VARIED response that builds on the conversation above. Do NOT repeat the same template or answer. Address the NEW question with FRESH insights.\n';
+            }
+
+            const contextualQuestion = `Regarding ${selectedLocation}: ${message}.${historyContext} Please provide a concise, specific answer in 2-3 sentences with actionable insights.`;
+
+            try {
+                const response = await fetch(`${API_URL}/defend`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        question: contextualQuestion
+                    })
+                });
+
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const data = await response.json();
+                let answer = data.answer || 'Sorry, no response generated.';
+
+                // Summarize if response is too long (>300 chars)
+                if (answer.length > 300) {
+                    answer = summarizeResponse(answer);
+                }
+
+                // Save to history
+                chatHistory.push({
+                    question: message,
+                    answer: answer
+                });
+
+                // Remove loading indicator
+                loadingMsg.remove();
+
+                // Add actual response
+                addChatMessage('assistant', answer);
+
+            } catch (error) {
+                console.error('Chat error:', error);
+                loadingMsg.remove();
+                addChatMessage('assistant', '❌ Error sending message. Please try again.');
+            }
+        }
+
+        // Summarize long responses
+        function summarizeResponse(text) {
+            // Remove markdown formatting
+            text = text.replace(/[*_~`#]/g, '');
+
+            // Extract first 2-3 sentences or first 280 characters
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            if (sentences.length <= 3) {
+                return text.substring(0, 300) + (text.length > 300 ? '...' : '');
+            }
+
+            // Take first 2 sentences
+            return sentences.slice(0, 2).join('. ') + '.';
+        }
+
+        // Add chat message
+        function addChatMessage(sender, text) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            messageDiv.innerHTML = `
+                <div class="message-sender">${sender === 'user' ? 'You' : 'AI Consultant'}</div>
+                <div>${text}</div>
+            `;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            return messageDiv; // Return for later removal if needed
+        }
+
+        // Open shelf detail modal
+        async function openShelfDetail(locationName, locationId) {
+            const modal = document.getElementById('shelfDetailModal');
+            const modalTitle = document.getElementById('modalLocationName');
+            const modalBody = document.getElementById('modalBody');
+            const shelfInfo = document.getElementById('shelfOverallInfo');
+
+            modalTitle.textContent = `📦 ${locationName} - Shelf Rows`;
+            modalBody.innerHTML = '<div class="loading">Loading shelf details...</div>';
+            shelfInfo.innerHTML = '';
+
+            modal.classList.add('active');
+
+            try {
+                // Fetch row-level data from API
+                const response = await fetch(`${API_URL}/location/${locationId}/rows?session_id=${currentSessionId}`);
+
+                if (!response.ok) {
+                    // If API endpoint doesn't exist, generate mock data
+                    const mockData = generateMockShelfRows(locationName, locationId);
+                    displayShelfRows(mockData, locationName);
+                    return;
+                }
+
+                const data = await response.json();
+                displayShelfRows(data, locationName);
+
+            } catch (error) {
+                console.error('Error fetching shelf rows:', error);
+                // Generate mock data as fallback
+                const mockData = generateMockShelfRows(locationName, locationId);
+                displayShelfRows(mockData, locationName);
+            }
+        }
+
+        // Generate mock shelf row data with detailed insights
+        function generateMockShelfRows(locationName, locationId) {
+            const locationData = storeLocationMap[locationName];
+            const baseROI = currentRecommendations.find(r => r.location === locationName)?.roi || 1.0;
+
+            // Define standard shelf rows with comprehensive ROI data and insights
+            const rows = [
+                {
+                    name: '👁️ Eye Level (1.2m - 1.6m)',
+                    multiplier: 1.3,
+                    visibility: 'Excellent',
+                    capacity: '12-15 facings',
+                    quality: 'optimal',
+                    psychologyInsight: '"Eye level is buy level" - Products here are seen 9x more than corner placements',
+                    salesImpact: 'Boosts sales by 23% compared to other shelf positions',
+                    customerBehavior: '70% of purchase decisions made at this level',
+                    bestFor: 'Premium products, new launches, high-margin items',
+                    attentionRate: '85%',
+                    conversionLift: '+23%',
+                    researchBacked: 'Trax Retail 2024 study'
+                },
+                {
+                    name: '🤚 Reach Level (1.6m - 1.9m)',
+                    multiplier: 1.1,
+                    visibility: 'Good',
+                    capacity: '12-15 facings',
+                    quality: 'good',
+                    psychologyInsight: 'Requires minimal effort to reach - comfortable for most shoppers',
+                    salesImpact: 'Solid performance with 10-15% above-average sales',
+                    customerBehavior: 'Taller customers (5\'8"+) naturally gravitate here',
+                    bestFor: 'Family-size products, bulk items, everyday brands',
+                    attentionRate: '62%',
+                    conversionLift: '+12%',
+                    researchBacked: 'Nielsen IQ behavioral analysis'
+                },
+                {
+                    name: '✋ Touch Level (0.9m - 1.2m)',
+                    multiplier: 1.15,
+                    visibility: 'Good',
+                    capacity: '12-15 facings',
+                    quality: 'good',
+                    psychologyInsight: 'Natural hand-reach zone - encourages tactile interaction',
+                    salesImpact: 'Strong performance at 15% above baseline',
+                    customerBehavior: 'High engagement from children and shorter adults',
+                    bestFor: 'Grab-and-go items, impulse purchases, kid-friendly products',
+                    attentionRate: '68%',
+                    conversionLift: '+15%',
+                    researchBacked: 'Cross-merchandising increases basket size by 22%'
+                },
+                {
+                    name: '🔽 Stoop Level (0.5m - 0.9m)',
+                    multiplier: 0.85,
+                    visibility: 'Fair',
+                    capacity: '15-18 facings',
+                    quality: 'fair',
+                    psychologyInsight: 'Requires bending - 25% sales drop compared to eye level',
+                    salesImpact: 'Below-average performance but cost-effective placement',
+                    customerBehavior: 'Only engaged shoppers or bargain hunters look here',
+                    bestFor: 'Value products, store brands, bulk staples, heavy items',
+                    attentionRate: '42%',
+                    conversionLift: '-15%',
+                    researchBacked: 'Tastewise 2025 shelf strategy study'
+                },
+                {
+                    name: '⬇️ Bottom Shelf (0m - 0.5m)',
+                    multiplier: 0.7,
+                    visibility: 'Poor',
+                    capacity: '18-20 facings',
+                    quality: 'poor',
+                    psychologyInsight: 'Lowest visibility zone - 33-50% of brands go unseen',
+                    salesImpact: 'Significant performance drop, 30% below average',
+                    customerBehavior: 'Primarily accessed by deal-seekers and loyal brand customers',
+                    bestFor: 'Clearance items, low-margin products, heavy/bulk goods',
+                    attentionRate: '28%',
+                    conversionLift: '-30%',
+                    researchBacked: 'RM Solutions visibility study 2024'
+                }
+            ];
+
+            return {
+                location_id: locationId,
+                location_name: locationName,
+                zone: locationData.zone,
+                overall_roi: baseROI,
+                rows: rows.map((row, index) => ({
+                    row_id: `${locationId}_R${index + 1}`,
+                    row_name: row.name,
+                    height_range: [0, 0],
+                    visibility_factor: row.visibility,
+                    capacity: row.capacity,
+                    calculated_roi: (baseROI * row.multiplier).toFixed(2),
+                    roi_percentage: ((baseROI * row.multiplier - 1) * 100).toFixed(0),
+                    quality: row.quality,
+                    psychology_insight: row.psychologyInsight,
+                    sales_impact: row.salesImpact,
+                    customer_behavior: row.customerBehavior,
+                    best_for: row.bestFor,
+                    attention_rate: row.attentionRate,
+                    conversion_lift: row.conversionLift,
+                    research_backed: row.researchBacked
+                }))
+            };
+        }
+
+        // Display shelf rows as actual shelf visualization
+        function displayShelfRows(data, locationName) {
+            const modalBody = document.getElementById('modalBody');
+            const shelfInfo = document.getElementById('shelfOverallInfo');
+
+            // Display overall shelf info
+            shelfInfo.innerHTML = `
+                <div class="info-item">
+                    <div class="info-label">Zone Type</div>
+                    <div class="info-value">${data.zone}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Overall ROI</div>
+                    <div class="info-value">${data.overall_roi}x</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Total Rows</div>
+                    <div class="info-value">${data.rows.length}</div>
+                </div>
+            `;
+
+            // Create actual shelf unit visualization
+            let html = '<div class="shelf-rows-title">🛒 Retail Shelf Unit - Side View</div>';
+            html += '<div class="shelf-unit-container">';
+
+            // Add vertical support posts
+            html += '<div class="shelf-post left"></div>';
+            html += '<div class="shelf-post right"></div>';
+
+            // Define shelf positions from top to bottom (reverse order for visual display)
+            const shelfPositions = [
+                { position: 30, index: 1 },   // Reach Level (top)
+                { position: 130, index: 0 },  // Eye Level
+                { position: 240, index: 2 },  // Touch Level
+                { position: 360, index: 3 },  // Stoop Level
+                { position: 490, index: 4 }   // Bottom Shelf
+            ];
+
+            shelfPositions.forEach(({position, index}) => {
+                const row = data.rows[index];
+                const roi = parseFloat(row.calculated_roi);
+                const roiClass = roi > 1.3 ? 'high-roi' :
+                                roi > 1.0 ? 'medium-roi' : 'low-roi';
+
+                html += `
+                    <div class="shelf-plank ${roiClass}" style="top: ${position}px;"
+                         data-row-index="${index}"
+                         onclick="showShelfDetail(${index}, ${JSON.stringify(row).replace(/"/g, '&quot;')})">
+                        <div class="shelf-content">
+                            <div class="shelf-label">${row.row_name}</div>
+                            <div class="shelf-roi-display">${row.calculated_roi}x ROI</div>
+                            <div class="shelf-metrics">
+                                <div class="shelf-metric">
+                                    <div class="shelf-metric-value">${row.attention_rate || row.visibility_factor}</div>
+                                    <div>Attention</div>
+                                </div>
+                                <div class="shelf-metric">
+                                    <div class="shelf-metric-value">${row.conversion_lift}</div>
+                                    <div>Conversion</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            // Add dedicated details container below shelf unit
+            html += `
+                <div class="shelf-details-container" id="shelfDetailsPanel">
+                    <div class="shelf-details-placeholder">
+                        👆 Click on any shelf above to see detailed insights
+                    </div>
+                </div>
+            `;
+
+            // Add legend
+            html += `
+                <div style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 10px; font-size: 12px;">
+                    <strong style="color: #1e293b;">💡 How to use:</strong> Hover over any shelf to see detailed insights.
+                    Color indicates ROI performance:
+                    <span style="color: #10b981; font-weight: 700;">Green (High)</span>,
+                    <span style="color: #3b82f6; font-weight: 700;">Blue (Medium)</span>,
+                    <span style="color: #f59e0b; font-weight: 700;">Yellow (Lower)</span>
+                </div>
+            `;
+
+            modalBody.innerHTML = html;
+        }
+
+        // Close shelf detail modal
+        function closeShelfDetail() {
+            const modal = document.getElementById('shelfDetailModal');
+            modal.classList.remove('active');
+        }
+
+        // Show shelf detail in dedicated panel below
+        function showShelfDetail(index, row) {
+            const detailsPanel = document.getElementById('shelfDetailsPanel');
+            if (!detailsPanel) return;
+
+            // Remove selected class from all shelves
+            document.querySelectorAll('.shelf-plank').forEach(plank => {
+                plank.classList.remove('selected');
+            });
+
+            // Add selected class to clicked shelf
+            const clickedShelf = document.querySelector(`[data-row-index="${index}"]`);
+            if (clickedShelf) {
+                clickedShelf.classList.add('selected');
+            }
+
+            const roi = parseFloat(row.calculated_roi);
+            const roiClass = roi > 1.3 ? 'high' : roi > 1.0 ? 'medium' : 'low';
+
+            // Build detailed content
+            let detailHtml = `
+                <div class="shelf-details-content active">
+                    <div class="shelf-detail-header">
+                        <div class="shelf-detail-title">${row.row_name}</div>
+                        <div class="shelf-detail-roi-badge ${roiClass}">${row.calculated_roi}x ROI</div>
+                    </div>
+
+                    <div class="shelf-detail-grid">
+                        ${row.psychology_insight ? `
+                        <div class="info-section">
+                            <strong>💡 Psychology Insight</strong><br>
+                            ${row.psychology_insight}
+                        </div>
+                        ` : ''}
+
+                        ${row.sales_impact ? `
+                        <div class="info-section impact">
+                            <strong>📊 Sales Impact</strong><br>
+                            ${row.sales_impact}
+                        </div>
+                        ` : ''}
+
+                        ${row.customer_behavior ? `
+                        <div class="info-section behavior">
+                            <strong>👥 Customer Behavior</strong><br>
+                            ${row.customer_behavior}
+                        </div>
+                        ` : ''}
+
+                        ${row.best_for ? `
+                        <div class="info-section bestfor">
+                            <strong>✨ Best Products For</strong><br>
+                            ${row.best_for}
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                        <div>
+                            <div style="font-size: 11px; color: #64748b; margin-bottom: 5px;">📦 Capacity</div>
+                            <div style="font-size: 16px; font-weight: 700; color: #1e293b;">${row.capacity}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; color: #64748b; margin-bottom: 5px;">👁️ Visibility</div>
+                            <div style="font-size: 16px; font-weight: 700; color: #1e293b;">${row.visibility_factor}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; color: #64748b; margin-bottom: 5px;">🎯 Attention Rate</div>
+                            <div style="font-size: 16px; font-weight: 700; color: #1e293b;">${row.attention_rate || 'N/A'}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; color: #64748b; margin-bottom: 5px;">📈 Conversion Lift</div>
+                            <div style="font-size: 16px; font-weight: 700; color: #1e293b;">${row.conversion_lift}</div>
+                        </div>
+                    </div>
+
+                    ${row.research_backed ? `
+                    <div class="research-citation" style="margin-top: 15px; text-align: center;">
+                        📚 Research: ${row.research_backed}
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            detailsPanel.innerHTML = detailHtml;
+
+            // Smooth scroll to details panel
+            detailsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Select a specific shelf row (legacy function kept for compatibility)
+        function selectShelfRow(rowId, rowName) {
+            console.log('Selected shelf row:', rowId, rowName);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('shelfDetailModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeShelfDetail();
+            }
+        });
+
+        // Allow Enter key to send message
+        document.getElementById('chatInput')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Initialize planogram on load
+        initializePlanogram();
+    </script>
+</body>
+</html>

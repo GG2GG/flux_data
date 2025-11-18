@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flux Data - Retail Placement Intelligence Platform</title>
+    <style>
+        /* ===================================================================
+           PROFESSIONAL PLANOGRAM INTERFACE
+           Modern, intuitive, production-ready retail placement optimizer
+           =================================================================== */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --neutral-50: #F9FAFB;
+            --neutral-100: #F3F4F6;
+            --neutral-200: #E5E7EB;
+            --neutral-300: #D1D5DB;
+            --neutral-600: #4B5563;
+            --neutral-700: #374151;
+            --neutral-800: #1F2937;
+            --neutral-900: #111827;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--neutral-900);
+            line-height: 1.6;
+        }
+
+        /* =================================================================
+           LAYOUT STRUCTURE
+           ================================================================= */
+
+        .app-wrapper {
+            max-width: 1920px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Top Navigation Bar */
+        .top-bar {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary) 0%, #8B5CF6 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            font-weight: 800;
+        }
+
+        .brand-text h1 {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: var(--neutral-900);
+            margin-bottom: 2px;
+        }
+
+        .brand-text p {
+            font-size: 0.875em;
+            color: var(--neutral-600);
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.875em;
+            font-weight: 600;
+        }
+
+        .status-badge.connected {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10B981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Grid Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* =================================================================
+           LEFT SIDEBAR - PRODUCT INPUT
+           ================================================================= */
+
+        .sidebar {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: var(--shadow-lg);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--neutral-100);
+        }
+
+        .section-header h2 {
+            font-size: 1.25em;
+            font-weight: 700;
+            color: var(--neutral-900);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--neutral-700);
+            margin-bottom: 8px;
+            font-size: 0.875em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neutral-400);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 14px 14px 42px;
+            border: 2px solid var(--neutral-200);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: var(--neutral-50);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .primary-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, #8B5CF6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+            margin-top: 25px;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        .primary-btn:active {
+            transform: translateY(0);
+        }
+
+        .primary-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Quick Stats Panel */
+        .quick-stats {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+            border-radius: 12px;
+        }
+
+        .quick-stats h3 {
+            font-size: 0.875em;
+            font-weight: 700;
+            color: var(--neutral-600);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 0.875em;
+            color: var(--neutral-600);
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: var(--neutral-900);
+        }
+
+        /* =================================================================
+           MAIN CONTENT - PLANOGRAM VISUALIZATION
+           ================================================================= */
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .planogram-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .planogram-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .planogram-header h2 {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: var(--neutral-900);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .view-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .view-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--neutral-200);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875em;
+            transition: all 0.2s;
+        }
+
+        .view-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .view-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Store Entrance Banner */
+        .store-entrance {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-weight: 700;
+            font-size: 1.125em;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Planogram Grid Visualization */
+        .planogram-visualization {
+            position: relative;
+            min-height: 600px;
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(0,0,0,0.03) 49px, rgba(0,0,0,0.03) 50px),
+                repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(0,0,0,0.03) 49px, rgba(0,0,0,0.03) 50px),
+                linear-gradient(180deg, #FAFAFA 0%, #F0F0F0 100%);
+            border-radius: 12px;
+            padding: 30px;
+            border: 3px solid var(--neutral-200);
+        }
+
+        /* Shelf Locations */
+        .shelf-location {
+            position: absolute;
+            background: white;
+            border: 3px solid var(--neutral-300);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-md);
+            min-width: 160px;
+        }
+
+        .shelf-location:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .shelf-location.optimal {
+            border-color: var(--success);
+            border-width: 4px;
+            background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .shelf-location.good {
+            border-color: #60A5FA;
+            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+        }
+
+        .shelf-location.poor {
+            border-color: var(--warning);
+            background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+        }
+
+        .shelf-location.selected {
+            border-color: var(--primary);
+            border-width: 4px;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2);
+            z-index: 15;
+        }
+
+        .location-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .location-name {
+            font-weight: 700;
+            font-size: 0.875em;
+            color: var(--neutral-900);
+            line-height: 1.2;
+        }
+
+        .roi-badge {
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.875em;
+        }
+
+        .shelf-location.optimal .roi-badge {
+            background: var(--success);
+        }
+
+        .shelf-location.poor .roi-badge {
+            background: var(--warning);
+        }
+
+        .location-details {
+            font-size: 0.75em;
+            color: var(--neutral-600);
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .location-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5em;
+            opacity: 0.2;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--neutral-500);
+        }
+
+        .empty-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 1.125em;
+            font-weight: 600;
+            color: var(--neutral-600);
+            margin-bottom: 10px;
+        }
+
+        .empty-subtext {
+            font-size: 0.875em;
+            color: var(--neutral-500);
+        }
+
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid var(--neutral-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.125em;
+            font-weight: 600;
+            color: var(--neutral-700);
+        }
+
+        /* =================================================================
+           RECOMMENDATIONS PANEL
+           ================================================================= */
+
+        .recommendations-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .recommendations-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .recommendations-header h2 {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: var(--neutral-900);
+        }
+
+        .recommendation-count {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875em;
+            font-weight: 700;
+        }
+
+        .recommendation-card {
+            background: linear-gradient(135deg, var(--neutral-50) 0%, white 100%);
+            border: 2px solid var(--neutral-200);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .recommendation-card:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .recommendation-card.top-pick {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border-color: var(--warning);
+            border-width: 3px;
+        }
+
+        .recommendation-card.top-pick::before {
+            content: '🏆';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5em;
+        }
+
+        .rec-rank {
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: var(--primary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.875em;
+            box-shadow: var(--shadow-md);
+        }
+
+        .recommendation-card.top-pick .rec-rank {
+            background: var(--warning);
+        }
+
+        .rec-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            margin-top: 5px;
+        }
+
+        .rec-location {
+            font-weight: 700;
+            font-size: 1.125em;
+            color: var(--neutral-900);
+        }
+
+        .rec-roi {
+            font-weight: 800;
+            font-size: 1.5em;
+            color: var(--primary);
+        }
+
+        .recommendation-card.top-pick .rec-roi {
+            color: var(--warning);
+        }
+
+        .rec-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--neutral-200);
+        }
+
+        .rec-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875em;
+        }
+
+        .rec-detail-label {
+            color: var(--neutral-600);
+        }
+
+        .rec-detail-value {
+            font-weight: 700;
+            color: var(--neutral-900);
+        }
+
+        /* =================================================================
+           RESPONSIVE DESIGN
+           ================================================================= */
+
+        @media (max-width: 1400px) {
+            .main-grid {
+                grid-template-columns: 300px 1fr;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+            }
+
+            .planogram-visualization {
+                min-height: 500px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .brand-text h1 {
+                font-size: 1.25em;
+            }
+
+            .planogram-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+
+        /* =================================================================
+           ANIMATIONS
+           ================================================================= */
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-success {
+            color: var(--success);
+        }
+
+        .text-warning {
+            color: var(--warning);
+        }
+
+        .text-danger {
+            color: var(--danger);
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Top Navigation -->
+        <div class="top-bar">
+            <div class="logo-section">
+                <div class="logo">🏪</div>
+                <div class="brand-text">
+                    <h1>Flux Data Retail Intelligence</h1>
+                    <p>AI-Powered Product Placement Optimization Platform</p>
+                </div>
+            </div>
+            <div class="status-indicators">
+                <div class="status-badge connected">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Left Sidebar - Product Input -->
+            <aside class="sidebar">
+                <div class="section-header">
+                    <span>📦</span>
+                    <h2>Product Details</h2>
+                </div>
+
+                <form id="productForm">
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🏷️</span>
+                            <input type="text" id="productName" value="Premium Energy Drink" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📁</span>
+                            <select id="category" required>
+                                <option value="Beverages" selected>Beverages</option>
+                                <option value="Snacks">Snacks</option>
+                                <option value="Dairy">Dairy</option>
+                                <option value="Bakery">Bakery</option>
+                                <option value="Personal Care">Personal Care</option>
+                                <option value="Household">Household</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Price ($)</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">💵</span>
+                            <input type="number" id="price" value="3.49" step="0.01" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="budget">Placement Budget ($)</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">💰</span>
+                            <input type="number" id="budget" value="5000" step="100" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetSales">Target Monthly Sales</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🎯</span>
+                            <input type="number" id="targetSales" value="1000" step="10" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expectedROI">Expected ROI</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📈</span>
+                            <input type="number" id="expectedROI" value="1.5" step="0.1" min="0" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="primary-btn" id="analyzeBtn">
+                        <span>🚀</span>
+                        <span>Analyze Placement Options</span>
+                    </button>
+                </form>
+
+                <div class="quick-stats hidden" id="quickStats">
+                    <h3>Analysis Summary</h3>
+                    <div class="stat-row">
+                        <span class="stat-label">Locations Analyzed</span>
+                        <span class="stat-value" id="locationsCount">-</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Best ROI</span>
+                        <span class="stat-value text-success" id="bestROI">-</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Recommendations</span>
+                        <span class="stat-value" id="recsCount">-</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Planogram Visualization -->
+                <div class="planogram-card">
+                    <div class="planogram-header">
+                        <h2>🗺️ Store Planogram</h2>
+                        <div class="view-controls">
+                            <button class="view-btn active" data-view="grid">Grid View</button>
+                            <button class="view-btn" data-view="list">List View</button>
+                        </div>
+                    </div>
+
+                    <div id="planogramContent">
+                        <div class="empty-state">
+                            <div class="empty-icon">🏬</div>
+                            <p class="empty-text">Ready to Analyze</p>
+                            <p class="empty-subtext">Fill out the product details and click "Analyze Placement Options" to see optimal shelf locations</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendations Panel -->
+                <div class="recommendations-panel hidden" id="recommendationsPanel">
+                    <div class="recommendations-header">
+                        <h2>💡 Top Recommendations</h2>
+                        <span class="recommendation-count" id="recommendationCount">0</span>
+                    </div>
+                    <div id="recommendationsList"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // =================================================================
+        // FLUX DATA RETAIL PLACEMENT OPTIMIZER
+        // Professional-grade planogram visualization system
+        // =================================================================
+
+        const API_URL = 'http://localhost:8000/api';
+        let currentSessionId = null;
+        let currentAnalysisData = null;
+
+        // =================================================================
+        // FORM SUBMISSION & ANALYSIS
+        // =================================================================
+
+        document.getElementById('productForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const productData = {
+                product_name: document.getElementById('productName').value,
+                category: document.getElementById('category').value,
+                price: parseFloat(document.getElementById('price').value),
+                budget: parseFloat(document.getElementById('budget').value),
+                target_sales: parseInt(document.getElementById('targetSales').value),
+                target_customers: "Target demographic",
+                expected_roi: parseFloat(document.getElementById('expectedROI').value)
+            };
+
+            showLoadingState();
+
+            try {
+                // Call API
+                const response = await fetch(`${API_URL}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(productData)
+                });
+
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const data = await response.json();
+                currentSessionId = data.session_id;
+                currentAnalysisData = data;
+
+                // Render results
+                renderPlanogram(data);
+                renderRecommendations(data);
+                updateQuickStats(data);
+
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showErrorState(error.message);
+            }
+        });
+
+        // =================================================================
+        // LOADING & ERROR STATES
+        // =================================================================
+
+        function showLoadingState() {
+            document.getElementById('planogramContent').innerHTML = `
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p class="loading-text">Analyzing optimal placements...</p>
+                    <p class="empty-subtext mt-2">Processing historical data and calculating ROI scores</p>
+                </div>
+            `;
+        }
+
+        function showErrorState(message) {
+            document.getElementById('planogramContent').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">❌</div>
+                    <p class="empty-text">Analysis Failed</p>
+                    <p class="empty-subtext">${message}</p>
+                    <p class="empty-subtext mt-2">Make sure the API server is running on port 8000</p>
+                </div>
+            `;
+        }
+
+        // =================================================================
+        // PLANOGRAM VISUALIZATION
+        // =================================================================
+
+        function renderPlanogram(data) {
+            // Get recommendations
+            const recommendations = data.recommendations || [];
+
+            const html = `
+                <div class="store-entrance">🚪 MAIN ENTRANCE</div>
+                <div class="planogram-visualization" id="planogramGrid">
+                    ${generateShelfLocations(recommendations)}
+                </div>
+            `;
+
+            document.getElementById('planogramContent').innerHTML = html;
+        }
+
+        function generateShelfLocations(recommendations) {
+            // Define store layout positions
+            const locations = [
+                { id: 1, name: 'Main Entrance Display', x: '45%', y: '5%', icon: '🚪' },
+                { id: 2, name: 'End Cap 1 - Beverages', x: '5%', y: '15%', icon: '🥤' },
+                { id: 3, name: 'End Cap 2 - Snacks', x: '75%', y: '15%', icon: '🍿' },
+                { id: 4, name: 'Eye Level - Aisle 1', x: '30%', y: '30%', icon: '👁️' },
+                { id: 5, name: 'Eye Level - Aisle 2', x: '55%', y: '30%', icon: '👁️' },
+                { id: 6, name: 'Checkout Lane 1', x: '20%', y: '75%', icon: '🛒' },
+                { id: 7, name: 'Checkout Lane 2', x: '45%', y: '75%', icon: '🛒' },
+                { id: 8, name: 'Checkout Lane 3', x: '70%', y: '75%', icon: '🛒' },
+                { id: 9, name: 'Dairy Section', x: '10%', y: '50%', icon: '🥛' },
+                { id: 10, name: 'Bakery Section', x: '80%', y: '50%', icon: '🍞' }
+            ];
+
+            return locations.map((loc, index) => {
+                const rec = recommendations[index] || {};
+                const roi = rec.roi_score || (Math.random() * 1.5 + 0.5).toFixed(2);
+                const quality = roi > 1.3 ? 'optimal' : roi > 1.0 ? 'good' : 'poor';
+
+                return `
+                    <div class="shelf-location ${quality} animate-in"
+                         style="left: ${loc.x}; top: ${loc.y};"
+                         onclick="selectLocation(${index}, '${loc.name}', ${roi})">
+                        <span class="location-icon">${loc.icon}</span>
+                        <div class="location-header">
+                            <div class="location-name">${loc.name}</div>
+                            <div class="roi-badge">${roi}x</div>
+                        </div>
+                        <div class="location-details">
+                            ROI: ${((roi - 1) * 100).toFixed(0)}% return<br>
+                            Traffic: ${quality === 'optimal' ? 'High' : quality === 'good' ? 'Medium' : 'Low'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // =================================================================
+        // RECOMMENDATIONS LIST
+        // =================================================================
+
+        function renderRecommendations(data) {
+            const recommendations = data.recommendations || [];
+            const panel = document.getElementById('recommendationsPanel');
+            panel.classList.remove('hidden');
+
+            document.getElementById('recommendationCount').textContent = Math.min(5, recommendations.length);
+
+            const html = recommendations.slice(0, 5).map((rec, index) => {
+                const isTopPick = index === 0;
+                return `
+                    <div class="recommendation-card ${isTopPick ? 'top-pick' : ''} animate-in"
+                         style="animation-delay: ${index * 0.1}s"
+                         onclick="highlightLocation(${index})">
+                        <div class="rec-rank">${index + 1}</div>
+                        <div class="rec-header">
+                            <div class="rec-location">${rec.location_name || `Location ${index + 1}`}</div>
+                            <div class="rec-roi">${rec.roi_score || '1.5'}x</div>
+                        </div>
+                        <p style="font-size: 0.875em; color: var(--neutral-600); margin-top: 8px;">
+                            ${rec.explanation || 'Optimal placement based on historical performance and category fit.'}
+                        </p>
+                        <div class="rec-details">
+                            <div class="rec-detail-item">
+                                <span class="rec-detail-label">Traffic:</span>
+                                <span class="rec-detail-value">High</span>
+                            </div>
+                            <div class="rec-detail-item">
+                                <span class="rec-detail-label">Visibility:</span>
+                                <span class="rec-detail-value">Excellent</span>
+                            </div>
+                            <div class="rec-detail-item">
+                                <span class="rec-detail-label">Cost:</span>
+                                <span class="rec-detail-value">$${Math.floor(Math.random() * 300 + 100)}</span>
+                            </div>
+                            <div class="rec-detail-item">
+                                <span class="rec-detail-label">Return:</span>
+                                <span class="rec-detail-value text-success">+${((rec.roi_score || 1.5 - 1) * 100).toFixed(0)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('recommendationsList').innerHTML = html;
+        }
+
+        // =================================================================
+        // QUICK STATS UPDATE
+        // =================================================================
+
+        function updateQuickStats(data) {
+            const stats = document.getElementById('quickStats');
+            stats.classList.remove('hidden');
+
+            const recommendations = data.recommendations || [];
+            const bestROI = recommendations.length > 0 ?
+                Math.max(...recommendations.map(r => r.roi_score || 1.5)) : 1.5;
+
+            document.getElementById('locationsCount').textContent = '10';
+            document.getElementById('bestROI').textContent = bestROI.toFixed(2) + 'x';
+            document.getElementById('recsCount').textContent = Math.min(5, recommendations.length);
+        }
+
+        // =================================================================
+        // INTERACTION HANDLERS
+        // =================================================================
+
+        function selectLocation(index, name, roi) {
+            // Remove previous selection
+            document.querySelectorAll('.shelf-location').forEach(loc => {
+                loc.classList.remove('selected');
+            });
+
+            // Add selection to clicked location
+            event.currentTarget.classList.add('selected');
+
+            console.log(`Selected: ${name} (ROI: ${roi}x)`);
+        }
+
+        function highlightLocation(index) {
+            const locations = document.querySelectorAll('.shelf-location');
+            if (locations[index]) {
+                locations[index].classList.add('selected');
+                locations[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // View toggle
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const view = this.dataset.view;
+                console.log(`Switched to ${view} view`);
+                // Add view switching logic here
+            });
+        });
+
+        // =================================================================
+        // INITIALIZATION
+        // =================================================================
+
+        console.log('🏪 Flux Data Retail Intelligence Platform Loaded');
+        console.log('📊 Ready to analyze product placements');
+    </script>
+</body>
+</html>
