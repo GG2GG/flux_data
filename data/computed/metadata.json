@@ -1,5 +1,5 @@
 {
-  "computation_timestamp": "2025-11-18T07:00:26.256263",
+  "computation_timestamp": "2025-11-18T07:28:47.968180",
   "data_sources": {
     "sales_data": true,
     "sales_file": "/app/data/input/sales_history.csv"
