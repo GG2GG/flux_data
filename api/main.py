@@ -18,6 +18,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from models.schemas import ProductInput, PlacementState
 from workflows.orchestrator import Orchestrator
+from api.game_routes import router as game_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -40,6 +41,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include game routes
+app.include_router(game_router)
 
 # Session store (in-memory for MVP, use Redis in production)
 session_store: Dict[str, PlacementState] = {}
@@ -215,7 +219,13 @@ async def root():
             "defend": "POST /api/defend",
             "competitors": "GET /api/competitors/{location_id}",
             "products": "GET /api/products",
-            "locations": "GET /api/locations"
+            "locations": "GET /api/locations",
+            "game_session_create": "POST /api/game/session/create",
+            "game_session_get": "GET /api/game/session/{session_id}",
+            "game_session_sync": "POST /api/game/session/sync",
+            "game_rows": "GET /api/game/rows/{location_id}",
+            "game_choice": "POST /api/game/choice",
+            "game_dialogue": "GET /api/game/agent/dialogue/{category}/{row_number}"
         }
     }
 
