@@ -1,50 +1,30 @@
 """
 LLM Client for OpenAI-compatible APIs
-Supports OpenAI, OpenRouter, Gemini, and other compatible endpoints
+Supports OpenAI, OpenRouter, and other compatible endpoints
+Includes knowledge base integration for research-backed responses
 """
 
 import os
 import json
 import logging
-from pathlib import Path
 from typing import Dict, List, Optional, Any
 from openai import OpenAI
+from dotenv import load_dotenv
+from utils.knowledge_base_loader import get_knowledge_base
 
 # Load environment variables from .env file
-try:
-    from dotenv import load_dotenv
-    env_path = Path(__file__).parent.parent / ".env"
-    if env_path.exists():
-        load_dotenv(env_path)
-        print(f"✅ SUCCESS: Loaded environment settings from {env_path}")
-    else:
-        print(f"ℹ️  INFO: No .env file found at {env_path}")
-        print(f"ℹ️  INFO: Using system environment variables instead")
-except ImportError:
-    print("ℹ️  INFO: python-dotenv not installed")
-    print("ℹ️  INFO: Install with: pip install python-dotenv")
+load_dotenv()
 
 logger = logging.getLogger(__name__)
-
-# Try to import Gemini SDK (optional)
-try:
-    import google.generativeai as genai
-    GEMINI_AVAILABLE = True
-    print("✅ SUCCESS: Google Gemini SDK is available and ready")
-except ImportError:
-    GEMINI_AVAILABLE = False
-    print("❌ ERROR: Google Gemini SDK not installed")
-    print("ℹ️  INFO: Install with: pip install google-generativeai")
 
 
 class LLMClient:
     """
-    Universal LLM client for OpenAI-compatible APIs and Gemini.
+    Universal LLM client for OpenAI-compatible APIs.
 
     Supports:
     - OpenAI (GPT-4, GPT-3.5)
     - OpenRouter (Claude, Llama, Mixtral, etc.)
-    - Google Gemini (gemini-pro, gemini-1.5-pro)
     - Local LLMs (LM Studio, Ollama with OpenAI compatibility)
     """
 
@@ -54,135 +34,47 @@ class LLMClient:
         base_url: Optional[str] = None,
         model: str = "gpt-4o-mini",
         temperature: float = 0.7,
-        max_tokens: int = 1500,
-        provider: Optional[str] = None  # 'openai', 'gemini', 'openrouter'
+        max_tokens: int = 1500
     ):
         """
         Initialize LLM client.
 
         Args:
-            api_key: API key (auto-detects from env: OPENAI_API_KEY, GEMINI_API_KEY, OPENROUTER_API_KEY)
+            api_key: API key (defaults to OPENAI_API_KEY or OPENROUTER_API_KEY env var)
             base_url: Base URL for API (defaults to OpenAI, can use OpenRouter)
-            model: Model to use (e.g., 'gpt-4o', 'gemini-1.5-pro', 'claude-3.5-sonnet')
+            model: Model to use
             temperature: Sampling temperature (0-1)
             max_tokens: Maximum tokens in response
-            provider: Force specific provider ('openai', 'gemini', 'openrouter')
         """
-        print("\n" + "="*60)
-        print("🔧 INITIALIZING AI LANGUAGE MODEL")
-        print("="*60)
-
-        # Auto-detect API key and provider from environment
+        # Auto-detect API key from environment
         if api_key is None:
-            print("🔍 Looking for API keys in environment...")
-
-            gemini_key = os.getenv('GEMINI_API_KEY')
-            openai_key = os.getenv('OPENAI_API_KEY')
-            openrouter_key = os.getenv('OPENROUTER_API_KEY')
-
-            if gemini_key:
-                print("✅ Found GEMINI_API_KEY")
-                print(f"   Key preview: {gemini_key[:10]}...{gemini_key[-4:]}")
-                api_key = gemini_key
-                provider = 'gemini'
-            elif openai_key:
-                print("✅ Found OPENAI_API_KEY")
-                print(f"   Key preview: {openai_key[:10]}...{openai_key[-4:]}")
-                api_key = openai_key
-                provider = 'openai'
-            elif openrouter_key:
-                print("✅ Found OPENROUTER_API_KEY")
-                print(f"   Key preview: {openrouter_key[:10]}...{openrouter_key[-4:]}")
-                api_key = openrouter_key
-                provider = 'openrouter'
-            else:
-                api_key = None
+            api_key = os.getenv('OPENAI_API_KEY') or os.getenv('OPENROUTER_API_KEY')
 
         if api_key is None:
-            print("❌ ERROR: No API key found!")
-            print("ℹ️  EXPLANATION: I need an API key to talk to AI services")
-            print("ℹ️  ACTION NEEDED: Please set one of these in your .env file:")
-            print("   - GEMINI_API_KEY (Recommended - free tier available)")
-            print("   - OPENAI_API_KEY")
-            print("   - OPENROUTER_API_KEY")
-            print("ℹ️  IMPACT: AI-powered explanations will be disabled")
-            print("ℹ️  FALLBACK: System will use template-based explanations instead")
-            print("="*60 + "\n")
             logger.warning("No API key found. LLM features will be disabled.")
             self.enabled = False
             return
 
-        # Set provider
-        self.provider = provider or 'openai'
-        print(f"✅ Using AI Provider: {self.provider.upper()}")
-
-        # Auto-detect base URL for OpenRouter
-        if base_url is None and self.provider == 'openrouter':
-            base_url = "https://openrouter.ai/api/v1"
-            print(f"🌐 API Endpoint: {base_url}")
-            logger.info("Using OpenRouter API")
-
-        # Initialize Gemini if requested
-        if self.provider == 'gemini':
-            print("🤖 Setting up Google Gemini...")
-
-            if not GEMINI_AVAILABLE:
-                print("❌ ERROR: Gemini SDK not installed!")
-                print("ℹ️  EXPLANATION: The Google Gemini library is missing")
-                print("ℹ️  ACTION NEEDED: Run this command:")
-                print("   pip install google-generativeai")
-                print("="*60 + "\n")
-                logger.error("Gemini requested but google-generativeai not installed")
-                self.enabled = False
-                return
-
-            try:
-                print("🔐 Configuring Gemini with your API key...")
-                genai.configure(api_key=api_key)
-
-                # Default to gemini-2.0-flash if model not specified or is an OpenAI model
-                # Updated: gemini-pro is deprecated, using gemini-2.0-flash for speed and reliability
-                if model.startswith('gpt') or model == 'gpt-4o-mini':
-                    original_model = model
-                    model = 'gemini-2.0-flash'
-                    print(f"ℹ️  Auto-switched model: {original_model} → {model}")
-
-                print(f"🎯 Selected Model: {model}")
-                self.gemini_model = genai.GenerativeModel(model)
-                print("✅ Gemini initialized successfully!")
-                print("ℹ️  WHAT THIS MEANS: AI will provide natural language explanations")
-                logger.info(f"Using Gemini API with model: {model}")
-
-            except Exception as e:
-                print(f"❌ ERROR initializing Gemini: {str(e)}")
-                print("ℹ️  POSSIBLE CAUSES:")
-                print("   1. Invalid API key")
-                print("   2. Network connection issue")
-                print("   3. Gemini API is down")
-                print("ℹ️  ACTION: Check your API key and internet connection")
-                print("="*60 + "\n")
-                self.enabled = False
-                return
+        # Auto-detect base URL from environment
+        if base_url is None:
+            base_url = os.getenv('OPENAI_API_BASE')
+            if base_url:
+                logger.info(f"Using custom base URL: {base_url}")
+            elif os.getenv('OPENROUTER_API_KEY'):
+                base_url = "https://openrouter.ai/api/v1"
+                logger.info("Using OpenRouter API")
 
         self.enabled = True
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-        # Initialize OpenAI client (compatible with OpenRouter) - only if not Gemini
-        if self.provider != 'gemini':
-            print("🔧 Initializing OpenAI-compatible client...")
-            self.client = OpenAI(
-                api_key=api_key,
-                base_url=base_url
-            )
-            print(f"✅ Client ready with model: {model}")
+        # Initialize OpenAI client (compatible with OpenRouter)
+        self.client = OpenAI(
+            api_key=api_key,
+            base_url=base_url
+        )
 
-        print(f"📊 Configuration:")
-        print(f"   • Temperature: {temperature} (creativity level)")
-        print(f"   • Max Tokens: {max_tokens} (response length)")
-        print("✅ AI SYSTEM READY TO USE!")
-        print("="*60 + "\n")
         logger.info(f"LLM Client initialized with model: {model}")
 
     def generate(
@@ -211,11 +103,6 @@ class LLMClient:
             return ""
 
         try:
-            # Use Gemini API if provider is gemini
-            if self.provider == 'gemini':
-                return self._generate_gemini(prompt, system_prompt, temperature, max_tokens, json_mode)
-
-            # OpenAI/OpenRouter path
             messages = []
 
             if system_prompt:
@@ -236,66 +123,20 @@ class LLMClient:
                 kwargs["response_format"] = {"type": "json_object"}
 
             # Make API call
+            logger.debug(f"Calling LLM with model: {kwargs['model']}, max_tokens: {kwargs.get('max_tokens')}")
             response = self.client.chat.completions.create(**kwargs)
 
-            return response.choices[0].message.content
+            content = response.choices[0].message.content
+            logger.debug(f"LLM raw response: {content[:200] if content else 'None'}")
+
+            if not content or content.strip() == "":
+                logger.warning("LLM returned empty content")
+                return ""
+
+            return content.strip()
 
         except Exception as e:
             logger.error(f"LLM generation error: {e}")
-            return f"Error generating response: {str(e)}"
-
-    def _generate_gemini(
-        self,
-        prompt: str,
-        system_prompt: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
-        json_mode: bool = False
-    ) -> str:
-        """Generate text using Gemini API."""
-        try:
-            print("🤖 Asking Gemini AI for response...")
-            print(f"📝 Prompt length: {len(prompt)} characters")
-
-            # Combine system and user prompts for Gemini
-            full_prompt = ""
-            if system_prompt:
-                full_prompt = f"{system_prompt}\n\n{prompt}"
-                print(f"📋 System prompt included ({len(system_prompt)} chars)")
-            else:
-                full_prompt = prompt
-
-            if json_mode:
-                full_prompt += "\n\nPlease respond in valid JSON format."
-                print("🔧 JSON mode enabled")
-
-            # Configure generation
-            generation_config = {
-                "temperature": temperature or self.temperature,
-                "max_output_tokens": max_tokens or self.max_tokens,
-            }
-            print(f"⚙️  Using temperature: {generation_config['temperature']}")
-
-            # Generate response
-            print("⏳ Waiting for Gemini response...")
-            response = self.gemini_model.generate_content(
-                full_prompt,
-                generation_config=generation_config
-            )
-
-            print(f"✅ Received response from Gemini ({len(response.text)} characters)")
-            return response.text
-
-        except Exception as e:
-            print(f"❌ ERROR: Gemini failed to generate response")
-            print(f"ℹ️  Error details: {str(e)}")
-            print("ℹ️  POSSIBLE CAUSES:")
-            print("   1. API key is invalid or expired")
-            print("   2. Rate limit exceeded (60 requests/minute on free tier)")
-            print("   3. Network connection issue")
-            print("   4. Prompt contains blocked content")
-            print("ℹ️  ACTION: Check error details above and try again")
-            logger.error(f"Gemini generation error: {e}")
             return f"Error generating response: {str(e)}"
 
     def generate_json(
@@ -351,45 +192,28 @@ class LLMClient:
             Natural language explanation
         """
         system_prompt = """You are an expert retail analyst specializing in product placement optimization.
-Your role is to explain placement recommendations in clear, actionable language that business stakeholders can understand.
+Provide SHORT, CONCISE, and FACTUAL explanations (3-5 bullet points maximum).
 
 Focus on:
-- WHY this placement works (data-driven reasoning)
-- Key success factors (traffic, visibility, category fit)
-- Risk factors and considerations
-- Competitive positioning
-- Expected outcomes
+- WHY this placement works (data-driven)
+- Top 3 success factors only
+- 1-2 key considerations
 
-Be concise but comprehensive. Use business terminology."""
+Use professional business language. Be direct and brief. NO lengthy paragraphs or sections."""
 
-        user_prompt = f"""Analyze this product placement recommendation:
+        user_prompt = f"""Product: {product['name']} (${product['price']:.2f}, {product['category']})
+Location: {location['zone_name']} ({location['zone_type']})
+Traffic: {location['traffic_level']} ({location['traffic_index']} visitors/day)
+Visibility: {location['visibility_factor']}x
+ROI: {roi_score:.2f}x
 
-**Product:**
-- Name: {product['name']}
-- Category: {product['category']}
-- Price: ${product['price']:.2f}
-- Price Tier: {product.get('price_tier', 'unknown')}
-
-**Recommended Location:**
-- Name: {location['zone_name']}
-- Type: {location['zone_type']}
-- Traffic Level: {location['traffic_level']} ({location['traffic_index']} daily visitors)
-- Visibility Factor: {location['visibility_factor']}x
-- Primary Category: {location['primary_category']}
-
-**Predicted Performance:**
-- ROI: {roi_score:.2f}x (${(roi_score - 1) * 100:.0f}% return)
-- Estimated Placement Cost: ${location['base_placement_cost'] * 4:.0f}/month
-
-**Additional Context:**
-{json.dumps(context, indent=2) if context else 'No additional context'}
-
-Provide a clear, strategic explanation of why this placement is optimal and what factors drive its success."""
+Explain in 3-5 SHORT bullet points why this placement works. Be concise and factual."""
 
         return self.generate(
             prompt=user_prompt,
             system_prompt=system_prompt,
-            temperature=0.7
+            temperature=0.5,
+            max_tokens=1000
         )
 
     def generate_competitive_analysis(
@@ -454,7 +278,8 @@ Provide strategic analysis of our competitive position and recommendations for s
         question: str,
         product: Dict[str, Any],
         recommendations: Dict[str, float],
-        context: Dict[str, Any]
+        context: Dict[str, Any],
+        use_knowledge_base: bool = True
     ) -> str:
         """
         Answer follow-up questions about recommendations using LLM.
@@ -464,44 +289,54 @@ Provide strategic analysis of our competitive position and recommendations for s
             product: Product details
             recommendations: ROI recommendations
             context: Additional context (competitors, historical data, etc.)
+            use_knowledge_base: Whether to include research-backed insights
 
         Returns:
             Natural language answer
         """
-        system_prompt = """You are a retail analytics expert assistant helping stakeholders understand product placement recommendations.
+        system_prompt = """You are a retail analytics expert. Answer questions about product placement recommendations.
 
-Answer questions:
-- Clearly and directly
-- With data-driven reasoning
-- Using specific numbers from the analysis
-- In business-friendly language
-- With actionable insights
+Be SHORT and CONCISE (3-5 sentences maximum):
+- Use specific numbers from the analysis
+- Be factual and data-driven
+- Cite research when available (e.g., "Research shows...")
+- Professional business language
+- Direct answers only
 
-If you don't have enough information, say so and explain what additional data would help."""
+NO lengthy paragraphs or unnecessary details."""
 
         recommendations_text = "\n".join([
             f"- {loc}: ROI {roi:.2f}"
             for loc, roi in list(recommendations.items())[:5]
         ])
 
-        user_prompt = f"""Answer this question about our product placement analysis:
+        # Get research-backed insights from knowledge base
+        research_context = ""
+        if use_knowledge_base:
+            try:
+                kb = get_knowledge_base()
+                research_context = kb.get_context_for_llm(question, max_sources=2, include_citations=False)
+            except Exception as e:
+                logger.warning(f"Failed to load knowledge base: {e}")
 
-**Question:** {question}
+        user_prompt = f"""Question: {question}
 
-**Product:** {product['name']} (${product['price']:.2f}, {product['category']})
+Product: {product['name']} (${product['price']:.2f}, {product['category']}, Budget: ${product.get('budget', 'N/A')})
 
-**Our Recommendations:**
+Top Recommendations:
 {recommendations_text}
 
-**Available Context:**
-{json.dumps(context, indent=2) if context else 'Limited context available'}
+Analysis Context: {json.dumps(context, indent=2) if context else 'Basic analysis only'}
 
-Provide a clear, helpful answer."""
+{research_context}
+
+Answer in 3-5 concise sentences with specific data points. If research is provided, reference it naturally (e.g., "Studies show...")."""
 
         return self.generate(
             prompt=user_prompt,
             system_prompt=system_prompt,
-            temperature=0.7
+            temperature=0.5,
+            max_tokens=500
         )
 
     def generate_insight_summary(
@@ -567,19 +402,23 @@ def get_llm_client() -> LLMClient:
     if _llm_client is None:
         # Try to initialize with available API keys
         api_key = os.getenv('OPENAI_API_KEY') or os.getenv('OPENROUTER_API_KEY')
-        base_url = None
-        model = "gpt-4o-mini"  # Fast, cheap, good quality
+        base_url = os.getenv('OPENAI_API_BASE')
+        model = os.getenv('LLM_MODEL', "gpt-4o-mini")
+        temperature = float(os.getenv('LLM_TEMPERATURE', '0.7'))
+        max_tokens = int(os.getenv('LLM_MAX_TOKENS', '1500'))
 
-        # Use OpenRouter if available
-        if os.getenv('OPENROUTER_API_KEY'):
+        # Use OpenRouter if available (and no custom base URL)
+        if os.getenv('OPENROUTER_API_KEY') and not base_url:
             base_url = "https://openrouter.ai/api/v1"
-            model = "anthropic/claude-3.5-sonnet"  # Or any OpenRouter model
+            if model == "gpt-4o-mini":  # Default model, use Claude for OpenRouter
+                model = "anthropic/claude-3.5-sonnet"
 
         _llm_client = LLMClient(
             api_key=api_key,
             base_url=base_url,
             model=model,
-            temperature=0.7
+            temperature=temperature,
+            max_tokens=max_tokens
         )
 
     return _llm_client

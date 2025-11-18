@@ -1,0 +1,124 @@
+version: '3.8'
+
+# Standalone Configuration with Ollama
+# Includes Ollama container for local LLM inference
+# No external API keys required
+
+services:
+  # Ollama LLM Service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: retail-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - retail-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    # Uncomment for GPU support (requires nvidia-docker)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # API Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: retail-placement-api
+    ports:
+      - "8000:8000"
+    environment:
+      # API Configuration
+      - PORT=8000
+      - LOG_LEVEL=info
+
+      # Ollama LLM Configuration
+      - OPENAI_API_KEY=ollama
+      - OPENAI_API_BASE=http://ollama:11434/v1
+      - LLM_MODEL=${LLM_MODEL:-deepseek-r1:latest}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.7}
+      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS:-1500}
+
+      # Data paths (inside container)
+      - DATA_DIR=/app/data
+      - CONFIG_DIR=/app/config
+    volumes:
+      # Mount data directory for persistence
+      - ./data:/app/data
+      - ./config:/app/config
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - retail-network
+
+  # Ollama Model Setup Service (runs once to pull model)
+  ollama-setup:
+    image: ollama/ollama:latest
+    container_name: retail-ollama-setup
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - retail-network
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Waiting for Ollama to be ready..."
+        sleep 5
+        echo "Pulling model: ${LLM_MODEL:-deepseek-r1:latest}"
+        ollama pull ${LLM_MODEL:-deepseek-r1:latest}
+        echo "Model pulled successfully!"
+    restart: "no"
+
+  # Web Server for Demo UI
+  web:
+    image: python:3.11-slim
+    container_name: retail-placement-web
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount entire project for demo access
+      - ./demo:/app/demo:ro
+      - ./docs:/app/docs:ro
+    working_dir: /app
+    command: python3 -m http.server 8080
+    depends_on:
+      - api
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/demo/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - retail-network
+
+networks:
+  retail-network:
+    driver: bridge
+
+volumes:
+  ollama-data:
+    driver: local
