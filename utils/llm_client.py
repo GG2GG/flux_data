@@ -1,24 +1,50 @@
 """
 LLM Client for OpenAI-compatible APIs
-Supports OpenAI, OpenRouter, and other compatible endpoints
+Supports OpenAI, OpenRouter, Gemini, and other compatible endpoints
 """
 
 import os
 import json
 import logging
+from pathlib import Path
 from typing import Dict, List, Optional, Any
 from openai import OpenAI
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent.parent / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+        print(f"✅ SUCCESS: Loaded environment settings from {env_path}")
+    else:
+        print(f"ℹ️  INFO: No .env file found at {env_path}")
+        print(f"ℹ️  INFO: Using system environment variables instead")
+except ImportError:
+    print("ℹ️  INFO: python-dotenv not installed")
+    print("ℹ️  INFO: Install with: pip install python-dotenv")
+
 logger = logging.getLogger(__name__)
+
+# Try to import Gemini SDK (optional)
+try:
+    import google.generativeai as genai
+    GEMINI_AVAILABLE = True
+    print("✅ SUCCESS: Google Gemini SDK is available and ready")
+except ImportError:
+    GEMINI_AVAILABLE = False
+    print("❌ ERROR: Google Gemini SDK not installed")
+    print("ℹ️  INFO: Install with: pip install google-generativeai")
 
 
 class LLMClient:
     """
-    Universal LLM client for OpenAI-compatible APIs.
+    Universal LLM client for OpenAI-compatible APIs and Gemini.
 
     Supports:
     - OpenAI (GPT-4, GPT-3.5)
     - OpenRouter (Claude, Llama, Mixtral, etc.)
+    - Google Gemini (gemini-pro, gemini-1.5-pro)
     - Local LLMs (LM Studio, Ollama with OpenAI compatibility)
     """
 
@@ -28,43 +54,135 @@ class LLMClient:
         base_url: Optional[str] = None,
         model: str = "gpt-4o-mini",
         temperature: float = 0.7,
-        max_tokens: int = 1500
+        max_tokens: int = 1500,
+        provider: Optional[str] = None  # 'openai', 'gemini', 'openrouter'
     ):
         """
         Initialize LLM client.
 
         Args:
-            api_key: API key (defaults to OPENAI_API_KEY or OPENROUTER_API_KEY env var)
+            api_key: API key (auto-detects from env: OPENAI_API_KEY, GEMINI_API_KEY, OPENROUTER_API_KEY)
             base_url: Base URL for API (defaults to OpenAI, can use OpenRouter)
-            model: Model to use
+            model: Model to use (e.g., 'gpt-4o', 'gemini-1.5-pro', 'claude-3.5-sonnet')
             temperature: Sampling temperature (0-1)
             max_tokens: Maximum tokens in response
+            provider: Force specific provider ('openai', 'gemini', 'openrouter')
         """
-        # Auto-detect API key from environment
+        print("\n" + "="*60)
+        print("🔧 INITIALIZING AI LANGUAGE MODEL")
+        print("="*60)
+
+        # Auto-detect API key and provider from environment
         if api_key is None:
-            api_key = os.getenv('OPENAI_API_KEY') or os.getenv('OPENROUTER_API_KEY')
+            print("🔍 Looking for API keys in environment...")
+
+            gemini_key = os.getenv('GEMINI_API_KEY')
+            openai_key = os.getenv('OPENAI_API_KEY')
+            openrouter_key = os.getenv('OPENROUTER_API_KEY')
+
+            if gemini_key:
+                print("✅ Found GEMINI_API_KEY")
+                print(f"   Key preview: {gemini_key[:10]}...{gemini_key[-4:]}")
+                api_key = gemini_key
+                provider = 'gemini'
+            elif openai_key:
+                print("✅ Found OPENAI_API_KEY")
+                print(f"   Key preview: {openai_key[:10]}...{openai_key[-4:]}")
+                api_key = openai_key
+                provider = 'openai'
+            elif openrouter_key:
+                print("✅ Found OPENROUTER_API_KEY")
+                print(f"   Key preview: {openrouter_key[:10]}...{openrouter_key[-4:]}")
+                api_key = openrouter_key
+                provider = 'openrouter'
+            else:
+                api_key = None
 
         if api_key is None:
+            print("❌ ERROR: No API key found!")
+            print("ℹ️  EXPLANATION: I need an API key to talk to AI services")
+            print("ℹ️  ACTION NEEDED: Please set one of these in your .env file:")
+            print("   - GEMINI_API_KEY (Recommended - free tier available)")
+            print("   - OPENAI_API_KEY")
+            print("   - OPENROUTER_API_KEY")
+            print("ℹ️  IMPACT: AI-powered explanations will be disabled")
+            print("ℹ️  FALLBACK: System will use template-based explanations instead")
+            print("="*60 + "\n")
             logger.warning("No API key found. LLM features will be disabled.")
             self.enabled = False
             return
 
+        # Set provider
+        self.provider = provider or 'openai'
+        print(f"✅ Using AI Provider: {self.provider.upper()}")
+
         # Auto-detect base URL for OpenRouter
-        if base_url is None and os.getenv('OPENROUTER_API_KEY'):
+        if base_url is None and self.provider == 'openrouter':
             base_url = "https://openrouter.ai/api/v1"
+            print(f"🌐 API Endpoint: {base_url}")
             logger.info("Using OpenRouter API")
+
+        # Initialize Gemini if requested
+        if self.provider == 'gemini':
+            print("🤖 Setting up Google Gemini...")
+
+            if not GEMINI_AVAILABLE:
+                print("❌ ERROR: Gemini SDK not installed!")
+                print("ℹ️  EXPLANATION: The Google Gemini library is missing")
+                print("ℹ️  ACTION NEEDED: Run this command:")
+                print("   pip install google-generativeai")
+                print("="*60 + "\n")
+                logger.error("Gemini requested but google-generativeai not installed")
+                self.enabled = False
+                return
+
+            try:
+                print("🔐 Configuring Gemini with your API key...")
+                genai.configure(api_key=api_key)
+
+                # Default to gemini-2.0-flash if model not specified or is an OpenAI model
+                # Updated: gemini-pro is deprecated, using gemini-2.0-flash for speed and reliability
+                if model.startswith('gpt') or model == 'gpt-4o-mini':
+                    original_model = model
+                    model = 'gemini-2.0-flash'
+                    print(f"ℹ️  Auto-switched model: {original_model} → {model}")
+
+                print(f"🎯 Selected Model: {model}")
+                self.gemini_model = genai.GenerativeModel(model)
+                print("✅ Gemini initialized successfully!")
+                print("ℹ️  WHAT THIS MEANS: AI will provide natural language explanations")
+                logger.info(f"Using Gemini API with model: {model}")
+
+            except Exception as e:
+                print(f"❌ ERROR initializing Gemini: {str(e)}")
+                print("ℹ️  POSSIBLE CAUSES:")
+                print("   1. Invalid API key")
+                print("   2. Network connection issue")
+                print("   3. Gemini API is down")
+                print("ℹ️  ACTION: Check your API key and internet connection")
+                print("="*60 + "\n")
+                self.enabled = False
+                return
 
         self.enabled = True
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-        # Initialize OpenAI client (compatible with OpenRouter)
-        self.client = OpenAI(
-            api_key=api_key,
-            base_url=base_url
-        )
+        # Initialize OpenAI client (compatible with OpenRouter) - only if not Gemini
+        if self.provider != 'gemini':
+            print("🔧 Initializing OpenAI-compatible client...")
+            self.client = OpenAI(
+                api_key=api_key,
+                base_url=base_url
+            )
+            print(f"✅ Client ready with model: {model}")
 
+        print(f"📊 Configuration:")
+        print(f"   • Temperature: {temperature} (creativity level)")
+        print(f"   • Max Tokens: {max_tokens} (response length)")
+        print("✅ AI SYSTEM READY TO USE!")
+        print("="*60 + "\n")
         logger.info(f"LLM Client initialized with model: {model}")
 
     def generate(
@@ -93,6 +211,11 @@ class LLMClient:
             return ""
 
         try:
+            # Use Gemini API if provider is gemini
+            if self.provider == 'gemini':
+                return self._generate_gemini(prompt, system_prompt, temperature, max_tokens, json_mode)
+
+            # OpenAI/OpenRouter path
             messages = []
 
             if system_prompt:
@@ -119,6 +242,60 @@ class LLMClient:
 
         except Exception as e:
             logger.error(f"LLM generation error: {e}")
+            return f"Error generating response: {str(e)}"
+
+    def _generate_gemini(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        json_mode: bool = False
+    ) -> str:
+        """Generate text using Gemini API."""
+        try:
+            print("🤖 Asking Gemini AI for response...")
+            print(f"📝 Prompt length: {len(prompt)} characters")
+
+            # Combine system and user prompts for Gemini
+            full_prompt = ""
+            if system_prompt:
+                full_prompt = f"{system_prompt}\n\n{prompt}"
+                print(f"📋 System prompt included ({len(system_prompt)} chars)")
+            else:
+                full_prompt = prompt
+
+            if json_mode:
+                full_prompt += "\n\nPlease respond in valid JSON format."
+                print("🔧 JSON mode enabled")
+
+            # Configure generation
+            generation_config = {
+                "temperature": temperature or self.temperature,
+                "max_output_tokens": max_tokens or self.max_tokens,
+            }
+            print(f"⚙️  Using temperature: {generation_config['temperature']}")
+
+            # Generate response
+            print("⏳ Waiting for Gemini response...")
+            response = self.gemini_model.generate_content(
+                full_prompt,
+                generation_config=generation_config
+            )
+
+            print(f"✅ Received response from Gemini ({len(response.text)} characters)")
+            return response.text
+
+        except Exception as e:
+            print(f"❌ ERROR: Gemini failed to generate response")
+            print(f"ℹ️  Error details: {str(e)}")
+            print("ℹ️  POSSIBLE CAUSES:")
+            print("   1. API key is invalid or expired")
+            print("   2. Rate limit exceeded (60 requests/minute on free tier)")
+            print("   3. Network connection issue")
+            print("   4. Prompt contains blocked content")
+            print("ℹ️  ACTION: Check error details above and try again")
+            logger.error(f"Gemini generation error: {e}")
             return f"Error generating response: {str(e)}"
 
     def generate_json(

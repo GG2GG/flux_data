@@ -65,7 +65,54 @@ public class DialogueManager : MonoBehaviour
             EndConversation();
             apiController.StartDemoApiCall(chosenGambitRow, chosenGambitCategory);
         }
+        // --- THIS IS THE FINAL STEP ---
+        else if (currentState == DialogueState.AwaitingDashboardLaunch && Input.GetKeyDown(KeyCode.X))
+        {
+            // We end the convo, AND launch the dashboard
+            EndConversation();
+            LaunchDashboard(); // <-- This is the new function
+        }
     }
+
+    // --- NEW FUNCTION to launch the browser ---
+    // --- NEW FUNCTION to launch the browser ---
+    void LaunchDashboard()
+    {
+        // This is the URL from your "Terminal 2" server
+        string dashboardUrl = "http://127.0.0.1:8001/demo/planogram_final.html"; 
+        
+        Debug.Log("--- Launching Dashboard at " + dashboardUrl + " ---");
+        
+        // This command opens your default web browser (Chrome, Firefox, etc.)
+        Application.OpenURL(dashboardUrl);
+
+        // --- THIS IS THE NEW LINE ---
+        // This will kick the game out of fullscreen mode
+        Screen.fullScreen = false;
+    }
+    // ----------------------------------------
+    // ----------------------------------------
+    
+    // --- This function now leads to the launch state ---
+    public void ShowGambitFinalLine(string line, int rowNum)
+    {
+        if (currentState != DialogueState.Inactive) return; 
+
+        bobMovement.enabled = false;
+        dialoguePanel.SetActive(true);
+        speakerNameText.text = "The Placement Gambit";
+        dialogueText.text = line;
+        
+        continuePrompt.SetActive(true);
+        choice1Button.gameObject.SetActive(false);
+        choice2Button.gameObject.SetActive(false);
+        choice3Button.gameObject.SetActive(false);
+        
+        currentState = DialogueState.AwaitingDashboardLaunch; // <-- Set the new state
+        chosenGambitRow = rowNum; 
+    }
+
+    // (All other functions are identical to the version you provided)
     
     public void ShowGambitFinalLine(string line, int rowNum)
     {
@@ -209,7 +256,7 @@ public class DialogueManager : MonoBehaviour
         continuePrompt.SetActive(true);
     }
 
-    void EndConversation()
+    public void EndConversation() // <-- Made public so GambitAgent can call it
     {
         dialoguePanel.SetActive(false);
         bobMovement.enabled = true;

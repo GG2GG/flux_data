@@ -105,7 +105,45 @@ public class GambitAgent : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player") && currentState == AgentState.WaitingAtRow)
+        if (other.CompareTag("Player"))
+        {
+            playerIsNearby = true; 
+            
+            if (currentState == AgentState.WaitingAtRow)
+            {
+                string lineToSay = "";
+                int rowNum = 0; // <-- Need to store the row number
+
+                if (currentRowTarget == row1Target) 
+                {
+                    lineToSay = row1Dialogue;
+                    rowNum = 1;
+                }
+                if (currentRowTarget == row2Target)
+                {
+                    lineToSay = row2Dialogue;
+                    rowNum = 2;
+                }
+                if (currentRowTarget == row3Target)
+                {
+                    lineToSay = row3Dialogue;
+                    rowNum = 3;
+                }
+
+                // --- THIS IS THE FIX ---
+                // We are now calling the new function that knows about the dashboard
+                dialogueManager.ShowGambitFinalLine(lineToSay, rowNum);
+                // ---------------------
+
+                currentState = AgentState.Idle;
+            }
+        }
+    }
+    // ------------------------------------
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
         {
             string lineToSay = "";
             int rowNum = 0;

@@ -9,12 +9,12 @@
     "visibility_factor": 1.5,
     "square_footage": 100,
     "display_type": "display",
-    "x": 163,
-    "y": 432,
-    "width": 176,
-    "height": 88,
+    "x": 50,
+    "y": 80,
+    "width": 180,
+    "height": 100,
     "base_placement_cost": 2000,
-    "notes": "End Cap in Beverages area"
+    "notes": "End Cap in Beverages area - Front left of store"
   },
   {
     "location_id": "L002",
@@ -26,12 +26,12 @@
     "visibility_factor": 1.3,
     "square_footage": 69,
     "display_type": "display",
-    "x": 390,
-    "y": 479,
-    "width": 167,
-    "height": 112,
+    "x": 750,
+    "y": 80,
+    "width": 180,
+    "height": 100,
     "base_placement_cost": 1200,
-    "notes": "Main Entrance in Snacks area"
+    "notes": "Main Entrance display - Front right of store"
   },
   {
     "location_id": "L003",
@@ -43,12 +43,12 @@
     "visibility_factor": 1.6,
     "square_footage": 90,
     "display_type": "display",
-    "x": 11,
-    "y": 117,
-    "width": 187,
-    "height": 148,
+    "x": 400,
+    "y": 500,
+    "width": 200,
+    "height": 120,
     "base_placement_cost": 1500,
-    "notes": "Checkout in Snacks area"
+    "notes": "Checkout area - Bottom center of store"
   },
   {
     "location_id": "L004",
@@ -60,12 +60,12 @@
     "visibility_factor": 1.2,
     "square_footage": 54,
     "display_type": "display",
-    "x": 787,
-    "y": 348,
-    "width": 114,
-    "height": 117,
+    "x": 50,
+    "y": 250,
+    "width": 180,
+    "height": 120,
     "base_placement_cost": 1000,
-    "notes": "Eye Level in Beverages area"
+    "notes": "Eye Level in Beverages area - Left side middle"
   },
   {
     "location_id": "L005",
@@ -77,12 +77,12 @@
     "visibility_factor": 1.2,
     "square_footage": 75,
     "display_type": "display",
-    "x": 161,
-    "y": 464,
-    "width": 100,
-    "height": 113,
+    "x": 280,
+    "y": 250,
+    "width": 180,
+    "height": 120,
     "base_placement_cost": 1000,
-    "notes": "Eye Level in Snacks area"
+    "notes": "Eye Level in Snacks area - Center left"
   },
   {
     "location_id": "L006",
@@ -94,12 +94,12 @@
     "visibility_factor": 1.0,
     "square_footage": 84,
     "display_type": "shelf",
-    "x": 780,
-    "y": 182,
-    "width": 164,
-    "height": 93,
+    "x": 510,
+    "y": 250,
+    "width": 180,
+    "height": 120,
     "base_placement_cost": 500,
-    "notes": "Regular Shelf in Dairy area"
+    "notes": "Regular Shelf in Dairy area - Center right"
   },
   {
     "location_id": "L007",
@@ -111,12 +111,12 @@
     "visibility_factor": 1.0,
     "square_footage": 100,
     "display_type": "shelf",
-    "x": 305,
-    "y": 519,
-    "width": 177,
-    "height": 105,
+    "x": 740,
+    "y": 250,
+    "width": 180,
+    "height": 120,
     "base_placement_cost": 500,
-    "notes": "Regular Shelf in Bakery area"
+    "notes": "Regular Shelf in Bakery area - Right side middle"
   },
   {
     "location_id": "L008",
@@ -128,12 +128,12 @@
     "visibility_factor": 1.5,
     "square_footage": 39,
     "display_type": "display",
-    "x": 382,
-    "y": 165,
-    "width": 169,
-    "height": 147,
+    "x": 280,
+    "y": 80,
+    "width": 180,
+    "height": 100,
     "base_placement_cost": 2000,
-    "notes": "End Cap in Snacks area"
+    "notes": "End Cap in Snacks area - Front center"
   },
   {
     "location_id": "L009",
@@ -145,12 +145,12 @@
     "visibility_factor": 1.0,
     "square_footage": 20,
     "display_type": "shelf",
-    "x": 613,
-    "y": 331,
-    "width": 162,
-    "height": 82,
+    "x": 510,
+    "y": 80,
+    "width": 180,
+    "height": 100,
     "base_placement_cost": 500,
-    "notes": "Regular Shelf in Personal Care area"
+    "notes": "Regular Shelf in Personal Care area - Front center-right"
   },
   {
     "location_id": "L010",
@@ -162,11 +162,11 @@
     "visibility_factor": 0.8,
     "square_footage": 34,
     "display_type": "shelf",
-    "x": 371,
-    "y": 314,
-    "width": 130,
-    "height": 87,
+    "x": 50,
+    "y": 420,
+    "width": 180,
+    "height": 80,
     "base_placement_cost": 400,
-    "notes": "Bottom Shelf in Beverages area"
+    "notes": "Bottom Shelf in Beverages area - Left side bottom"
   }
 ]
