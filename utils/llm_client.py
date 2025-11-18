@@ -8,6 +8,10 @@ import json
 import logging
 from typing import Dict, List, Optional, Any
 from openai import OpenAI
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -49,10 +53,14 @@ class LLMClient:
             self.enabled = False
             return
 
-        # Auto-detect base URL for OpenRouter
-        if base_url is None and os.getenv('OPENROUTER_API_KEY'):
-            base_url = "https://openrouter.ai/api/v1"
-            logger.info("Using OpenRouter API")
+        # Auto-detect base URL from environment
+        if base_url is None:
+            base_url = os.getenv('OPENAI_API_BASE')
+            if base_url:
+                logger.info(f"Using custom base URL: {base_url}")
+            elif os.getenv('OPENROUTER_API_KEY'):
+                base_url = "https://openrouter.ai/api/v1"
+                logger.info("Using OpenRouter API")
 
         self.enabled = True
         self.model = model
@@ -113,9 +121,17 @@ class LLMClient:
                 kwargs["response_format"] = {"type": "json_object"}
 
             # Make API call
+            logger.debug(f"Calling LLM with model: {kwargs['model']}, max_tokens: {kwargs.get('max_tokens')}")
             response = self.client.chat.completions.create(**kwargs)
 
-            return response.choices[0].message.content
+            content = response.choices[0].message.content
+            logger.debug(f"LLM raw response: {content[:200] if content else 'None'}")
+
+            if not content or content.strip() == "":
+                logger.warning("LLM returned empty content")
+                return ""
+
+            return content.strip()
 
         except Exception as e:
             logger.error(f"LLM generation error: {e}")
@@ -174,45 +190,28 @@ class LLMClient:
             Natural language explanation
         """
         system_prompt = """You are an expert retail analyst specializing in product placement optimization.
-Your role is to explain placement recommendations in clear, actionable language that business stakeholders can understand.
+Provide SHORT, CONCISE, and FACTUAL explanations (3-5 bullet points maximum).
 
 Focus on:
-- WHY this placement works (data-driven reasoning)
-- Key success factors (traffic, visibility, category fit)
-- Risk factors and considerations
-- Competitive positioning
-- Expected outcomes
+- WHY this placement works (data-driven)
+- Top 3 success factors only
+- 1-2 key considerations
 
-Be concise but comprehensive. Use business terminology."""
+Use professional business language. Be direct and brief. NO lengthy paragraphs or sections."""
 
-        user_prompt = f"""Analyze this product placement recommendation:
+        user_prompt = f"""Product: {product['name']} (${product['price']:.2f}, {product['category']})
+Location: {location['zone_name']} ({location['zone_type']})
+Traffic: {location['traffic_level']} ({location['traffic_index']} visitors/day)
+Visibility: {location['visibility_factor']}x
+ROI: {roi_score:.2f}x
 
-**Product:**
-- Name: {product['name']}
-- Category: {product['category']}
-- Price: ${product['price']:.2f}
-- Price Tier: {product.get('price_tier', 'unknown')}
-
-**Recommended Location:**
-- Name: {location['zone_name']}
-- Type: {location['zone_type']}
-- Traffic Level: {location['traffic_level']} ({location['traffic_index']} daily visitors)
-- Visibility Factor: {location['visibility_factor']}x
-- Primary Category: {location['primary_category']}
-
-**Predicted Performance:**
-- ROI: {roi_score:.2f}x (${(roi_score - 1) * 100:.0f}% return)
-- Estimated Placement Cost: ${location['base_placement_cost'] * 4:.0f}/month
-
-**Additional Context:**
-{json.dumps(context, indent=2) if context else 'No additional context'}
-
-Provide a clear, strategic explanation of why this placement is optimal and what factors drive its success."""
+Explain in 3-5 SHORT bullet points why this placement works. Be concise and factual."""
 
         return self.generate(
             prompt=user_prompt,
             system_prompt=system_prompt,
-            temperature=0.7
+            temperature=0.5,
+            max_tokens=1000
         )
 
     def generate_competitive_analysis(
@@ -291,40 +290,37 @@ Provide strategic analysis of our competitive position and recommendations for s
         Returns:
             Natural language answer
         """
-        system_prompt = """You are a retail analytics expert assistant helping stakeholders understand product placement recommendations.
+        system_prompt = """You are a retail analytics expert. Answer questions about product placement recommendations.
 
-Answer questions:
-- Clearly and directly
-- With data-driven reasoning
-- Using specific numbers from the analysis
-- In business-friendly language
-- With actionable insights
+Be SHORT and CONCISE (3-5 sentences maximum):
+- Use specific numbers from the analysis
+- Be factual and data-driven
+- Professional business language
+- Direct answers only
 
-If you don't have enough information, say so and explain what additional data would help."""
+NO lengthy paragraphs or unnecessary details."""
 
         recommendations_text = "\n".join([
             f"- {loc}: ROI {roi:.2f}"
             for loc, roi in list(recommendations.items())[:5]
         ])
 
-        user_prompt = f"""Answer this question about our product placement analysis:
+        user_prompt = f"""Question: {question}
 
-**Question:** {question}
+Product: {product['name']} (${product['price']:.2f}, {product['category']}, Budget: ${product.get('budget', 'N/A')})
 
-**Product:** {product['name']} (${product['price']:.2f}, {product['category']})
-
-**Our Recommendations:**
+Top Recommendations:
 {recommendations_text}
 
-**Available Context:**
-{json.dumps(context, indent=2) if context else 'Limited context available'}
+Context: {json.dumps(context, indent=2) if context else 'Basic analysis only'}
 
-Provide a clear, helpful answer."""
+Answer in 3-5 concise sentences with specific data points."""
 
         return self.generate(
             prompt=user_prompt,
             system_prompt=system_prompt,
-            temperature=0.7
+            temperature=0.5,
+            max_tokens=500
         )
 
     def generate_insight_summary(
@@ -390,19 +386,23 @@ def get_llm_client() -> LLMClient:
     if _llm_client is None:
         # Try to initialize with available API keys
         api_key = os.getenv('OPENAI_API_KEY') or os.getenv('OPENROUTER_API_KEY')
-        base_url = None
-        model = "gpt-4o-mini"  # Fast, cheap, good quality
+        base_url = os.getenv('OPENAI_API_BASE')
+        model = os.getenv('LLM_MODEL', "gpt-4o-mini")
+        temperature = float(os.getenv('LLM_TEMPERATURE', '0.7'))
+        max_tokens = int(os.getenv('LLM_MAX_TOKENS', '1500'))
 
-        # Use OpenRouter if available
-        if os.getenv('OPENROUTER_API_KEY'):
+        # Use OpenRouter if available (and no custom base URL)
+        if os.getenv('OPENROUTER_API_KEY') and not base_url:
             base_url = "https://openrouter.ai/api/v1"
-            model = "anthropic/claude-3.5-sonnet"  # Or any OpenRouter model
+            if model == "gpt-4o-mini":  # Default model, use Claude for OpenRouter
+                model = "anthropic/claude-3.5-sonnet"
 
         _llm_client = LLMClient(
             api_key=api_key,
             base_url=base_url,
             model=model,
-            temperature=0.7
+            temperature=temperature,
+            max_tokens=max_tokens
         )
 
     return _llm_client
