@@ -19,25 +19,26 @@ public class DialogueManager : MonoBehaviour
     // --- Private State ---
     private PlayerMovement bobMovement;
     private GambitAgent gambitAgent;
-    // No APIController is needed
+    private APIController apiController; 
 
     private enum DialogueState { Inactive, ShowingManagerLine, ShowingPlayerChoices, ShowingSingleLine, ShowingManagerResponse, 
                                  ShowingGambitIntro, ShowingGambitChoices, ShowingGambitResponse, ShowingGambitReconvo,
-                                 AwaitingDashboardLaunch } // <-- The final state
+                                 AwaitingApiCall }
     private DialogueState currentState;
     
     private int chosenGambitRow;
+    private string chosenGambitCategory; 
 
     void Start()
     {
         bobMovement = bob.GetComponent<PlayerMovement>();
         gambitAgent = FindObjectOfType<GambitAgent>();
+        apiController = FindObjectOfType<APIController>(); 
         StartManagerConversation();
     }
 
     void Update()
     {
-        // (All other states...)
         if (currentState == DialogueState.ShowingManagerLine && Input.GetKeyDown(KeyCode.X))
             ShowPlayerChoices();
         else if (currentState == DialogueState.ShowingManagerResponse && Input.GetKeyDown(KeyCode.X))
@@ -58,6 +59,11 @@ public class DialogueManager : MonoBehaviour
         {
             EndConversation();
             gambitAgent.GoToRow(chosenGambitRow);
+        }
+        else if (currentState == DialogueState.AwaitingApiCall && Input.GetKeyDown(KeyCode.X))
+        {
+            EndConversation();
+            apiController.StartDemoApiCall(chosenGambitRow, chosenGambitCategory);
         }
         // --- THIS IS THE FINAL STEP ---
         else if (currentState == DialogueState.AwaitingDashboardLaunch && Input.GetKeyDown(KeyCode.X))
@@ -108,6 +114,28 @@ public class DialogueManager : MonoBehaviour
 
     // (All other functions are identical to the version you provided)
     
+    public void ShowGambitFinalLine(string line, int rowNum)
+    {
+        if (currentState != DialogueState.Inactive) return; 
+
+        bobMovement.enabled = false;
+        dialoguePanel.SetActive(true);
+        speakerNameText.text = "The Placement Gambit";
+        dialogueText.text = line;
+        
+        continuePrompt.SetActive(true);
+        choice1Button.gameObject.SetActive(false);
+        choice2Button.gameObject.SetActive(false);
+        choice3Button.gameObject.SetActive(false);
+        
+        currentState = DialogueState.AwaitingApiCall; 
+        chosenGambitRow = rowNum; 
+        
+        if(rowNum == 1) chosenGambitCategory = "Dry Goods & Packaged Foods";
+        if(rowNum == 2) chosenGambitCategory = "Health & Beauty";
+        if(rowNum == 3) chosenGambitCategory = "General Merchandise & Electronics";
+    }
+
     public void StartGambitReconvo()
     {
         if (currentState != DialogueState.Inactive) return;
