@@ -1,0 +1,49 @@
+version: '3.8'
+
+# BYOM (Bring Your Own Model) Configuration
+# Use this with OpenAI, OpenRouter, or any external LLM API
+# Set your API keys in .env file
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: retail-placement-api
+    ports:
+      - "8000:8000"
+    environment:
+      # API Configuration
+      - PORT=8000
+      - LOG_LEVEL=info
+
+      # LLM Configuration (set in .env file)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_API_BASE=${OPENAI_API_BASE:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.7}
+      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS:-1500}
+
+      # Data paths (inside container)
+      - DATA_DIR=/app/data
+      - CONFIG_DIR=/app/config
+    volumes:
+      # Mount data directory for persistence
+      - ./data:/app/data
+      - ./config:/app/config
+      # Mount .env file
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - retail-network
+
+networks:
+  retail-network:
+    driver: bridge

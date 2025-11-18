@@ -42,7 +42,8 @@ app.add_middleware(
 )
 
 # Session store (in-memory for MVP, use Redis in production)
-session_store: Dict[str, PlacementState] = {}
+# Store both the recommendation and the product input for defend endpoint
+session_store: Dict[str, Dict[str, Any]] = {}
 
 # Data store (loaded at startup)
 data_store = {
@@ -67,41 +68,38 @@ async def startup_event():
 
     # Load all precomputed data
     data_dir = Path(__file__).parent.parent / "data"
+    config_dir = Path(__file__).parent.parent / "config"
 
     try:
-        # Load products
-        with open(data_dir / "products.json", 'r') as f:
-            data_store['products'] = json.load(f)
-        logger.info(f"✅ Loaded {len(data_store['products'])} products")
+        # Load products (optional - for reference only)
+        products_file = data_dir / "input" / "products.json"
+        if products_file.exists():
+            with open(products_file, 'r') as f:
+                data_store['products'] = json.load(f)
+            logger.info(f"✅ Loaded {len(data_store['products'])} products")
+        else:
+            logger.warning("⚠️  Products file not found (optional)")
 
-        # Load locations
-        with open(data_dir / "locations.json", 'r') as f:
-            data_store['locations'] = json.load(f)
-        logger.info(f"✅ Loaded {len(data_store['locations'])} locations")
+        # Load locations (optional - for reference only)
+        locations_file = data_dir / "input" / "locations.json"
+        if locations_file.exists():
+            with open(locations_file, 'r') as f:
+                data_store['locations'] = json.load(f)
+            logger.info(f"✅ Loaded {len(data_store['locations'])} locations")
+        else:
+            logger.warning("⚠️  Locations file not found (optional)")
 
-        # Load precomputed ROI
-        with open(data_dir / "precomputed_roi.json", 'r') as f:
-            data_store['precomputed_roi'] = json.load(f)
-        logger.info(f"✅ Loaded {len(data_store['precomputed_roi'])} ROI scores")
+        # Load computed metrics metadata
+        metadata_file = data_dir / "computed" / "metadata.json"
+        if metadata_file.exists():
+            with open(metadata_file, 'r') as f:
+                data_store['metadata'] = json.load(f)
+            logger.info(f"✅ Loaded metrics metadata (quality: {data_store['metadata']['data_quality']['quality_level']})")
+        else:
+            logger.warning("⚠️  Metadata not found - run adaptive_data_manager first")
 
-        # Load feature importance
-        with open(data_dir / "feature_importance.json", 'r') as f:
-            data_store['feature_importance'] = json.load(f)
-        logger.info(f"✅ Loaded {len(data_store['feature_importance'])} feature importance scores")
-
-        # Load competitors
-        with open(data_dir / "competitors.json", 'r') as f:
-            data_store['competitors'] = json.load(f)
-        logger.info(f"✅ Loaded {len(data_store['competitors'])} competitor products")
-
-        # Load historical examples
-        with open(data_dir / "historical_examples.json", 'r') as f:
-            data_store['historical_examples'] = json.load(f)
-        logger.info(f"✅ Loaded {len(data_store['historical_examples'])} historical examples")
-
-        # Initialize orchestrator with data
-        orchestrator = Orchestrator(data_dir=str(data_dir))
-        orchestrator.data_store = data_store  # Pass preloaded data
+        # Initialize orchestrator (it will handle data loading internally)
+        orchestrator = Orchestrator(data_dir=str(data_dir), config_dir=str(config_dir))
 
         logger.info("✅ Orchestrator initialized")
         logger.info("🎉 API ready to serve requests!")
@@ -223,19 +221,31 @@ async def root():
 @app.get("/api/health", tags=["Health"])
 async def health_check():
     """Health check endpoint"""
-    return {
+    response = {
         "status": "healthy",
         "version": "1.0.0",
         "timestamp": datetime.now().isoformat(),
-        "data_loaded": {
-            "products": len(data_store['products']),
-            "locations": len(data_store['locations']),
-            "roi_scores": len(data_store['precomputed_roi']),
-            "competitors": len(data_store['competitors']),
-            "historical_examples": len(data_store['historical_examples'])
-        },
         "active_sessions": len(session_store)
     }
+
+    # Add data quality info if available
+    if 'metadata' in data_store:
+        response["data_quality"] = {
+            "quality_level": data_store['metadata']['data_quality']['quality_level'],
+            "confidence_score": data_store['metadata']['data_quality']['confidence_score'],
+            "total_transactions": data_store['metadata']['sales_summary']['total_transactions'],
+            "computed_metrics": data_store['metadata']['metrics_summary']['computed_from_sales'],
+            "default_metrics": data_store['metadata']['metrics_summary']['using_defaults']
+        }
+
+    # Add basic data info if available
+    if data_store.get('products') or data_store.get('locations'):
+        response["data_loaded"] = {
+            "products": len(data_store.get('products', [])),
+            "locations": len(data_store.get('locations', []))
+        }
+
+    return response
 
 
 @app.post("/api/analyze", response_model=AnalyzeResponse, tags=["Analysis"])
@@ -274,23 +284,27 @@ async def analyze_placement(request: AnalyzeRequest):
             )
 
         # Generate explanation (use result.explanation from orchestrator)
-        explanation = result.explanation if result.explanation else _generate_simple_explanation(result)
+        explanation_obj = result.explanation if result.explanation else _generate_simple_explanation(result)
 
-        # Convert Explanation Pydantic model to dict if needed
-        if hasattr(explanation, 'model_dump'):
-            explanation_dict = explanation.model_dump()
-        elif hasattr(explanation, 'dict'):
-            explanation_dict = explanation.dict()
+        # Convert Explanation object to dict
+        if explanation_obj:
+            explanation_dict = {
+                "location": explanation_obj.location,
+                "roi_score": explanation_obj.roi_score,
+                "feature_importance": explanation_obj.feature_importance,
+                "historical_evidence": explanation_obj.historical_evidence if hasattr(explanation_obj, 'historical_evidence') else "",
+                "competitor_benchmark": explanation_obj.competitor_benchmark if hasattr(explanation_obj, 'competitor_benchmark') else "",
+                "counterfactual": explanation_obj.counterfactual if hasattr(explanation_obj, 'counterfactual') else "",
+                "confidence_assessment": explanation_obj.confidence_assessment if hasattr(explanation_obj, 'confidence_assessment') else ""
+            }
         else:
-            explanation_dict = explanation  # Already a dict
+            explanation_dict = {}
 
-        # Store session with all necessary data for chat
+        # Store session (both recommendation and product input)
         session_id = result.session_id
         session_store[session_id] = {
-            'product_input': product_input,
-            'recommendations': result.recommendations,
-            'explanation': result.explanation,
-            'timestamp': result.timestamp
+            'recommendation': result,
+            'product_input': product_input
         }
 
         # Build response
@@ -338,9 +352,11 @@ async def defend_recommendation(request: DefendRequest):
             )
 
         session_data = session_store[request.session_id]
+        recommendation = session_data['recommendation']
+        product_input = session_data['product_input']
 
-        # Generate answer based on question
-        answer = _answer_question(session_data, request.question, request.session_id)
+        # Use LLM to generate intelligent answer based on context
+        answer = _answer_question_with_llm(recommendation, product_input, request.question)
 
         response = DefendResponse(
             answer=answer,
@@ -444,145 +460,6 @@ async def get_locations():
         )
 
 
-@app.get("/data/aisle_rows_structure.json", tags=["Data"])
-async def get_aisle_rows_structure():
-    """
-    Get aisle rows structure with research-backed ROI multipliers.
-    """
-    try:
-        data_dir = Path(__file__).parent.parent / "data"
-        with open(data_dir / "aisle_rows_structure.json", 'r') as f:
-            aisle_data = json.load(f)
-        return aisle_data
-
-    except Exception as e:
-        logger.error(f"❌ Error fetching aisle rows structure: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal server error: {str(e)}"
-        )
-
-
-@app.get("/api/aisle/{location_id}/rows", tags=["Data"])
-async def get_location_rows_with_roi(
-    location_id: str,
-    product_price: float = 2.99,
-    session_id: Optional[str] = None
-):
-    """
-    Get row-level ROI calculations for a specific location.
-
-    This endpoint calculates ROI for each of the 6 shelf rows at a given location,
-    taking into account:
-    - Base ROI multiplier from research (eye-level = 1.23x, etc.)
-    - Location type modifiers (endcap = 1.25x traffic, etc.)
-    - Traffic level modifiers (high/medium/low)
-    - Product price
-
-    Args:
-        location_id: The location ID (e.g., "loc_001")
-        product_price: Product price for ROI calculation (default: $2.99)
-        session_id: Optional session ID to use product from analysis
-
-    Returns:
-        Dict with rows and calculated ROI for each
-    """
-    try:
-        # Load aisle rows structure
-        data_dir = Path(__file__).parent.parent / "data"
-        with open(data_dir / "aisle_rows_structure.json", 'r') as f:
-            aisle_data = json.load(f)
-
-        # Find the location
-        location = next(
-            (loc for loc in data_store['locations'] if loc['location_id'] == location_id),
-            None
-        )
-
-        if not location:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Location {location_id} not found"
-            )
-
-        # Get product price from session if provided
-        if session_id and session_id in session_store:
-            session_data = session_store[session_id]
-            product_price = session_data['product_input'].price
-
-        # Calculate ROI for each row
-        rows_with_roi = []
-        for row in aisle_data['row_structure']:
-            # Base ROI multiplier from research
-            base_roi = row['base_roi_multiplier']
-
-            # Location type modifier
-            location_modifier = 1.0
-            zone_type_key = location['zone_type'].lower().replace(' ', '_')
-            if zone_type_key in aisle_data['location_type_modifiers']:
-                location_modifier = aisle_data['location_type_modifiers'][zone_type_key]['traffic_multiplier']
-
-            # Traffic level modifier
-            traffic_modifier = 1.0
-            if location['traffic_level'] in aisle_data['traffic_level_modifiers']:
-                traffic_modifier = aisle_data['traffic_level_modifiers'][location['traffic_level']]['traffic_multiplier']
-
-            # Calculate final ROI
-            final_roi = base_roi * location_modifier * traffic_modifier
-            roi_percentage = ((final_roi - 1) * 100)
-
-            # Determine quality tier
-            quality = "standard"
-            if final_roi >= 1.15:
-                quality = "optimal"
-            elif final_roi < 0.85:
-                quality = "poor"
-
-            rows_with_roi.append({
-                "row_id": row['row_id'],
-                "row_name": row['row_name'],
-                "height_range": row['height_range_meters'],
-                "height_description": row['height_range_description'],
-                "description": row['description'],
-                "base_roi_multiplier": row['base_roi_multiplier'],
-                "visibility_factor": row['visibility_factor'],
-                "accessibility_factor": row['accessibility_factor'],
-                "calculated_roi": round(final_roi, 2),
-                "roi_percentage": round(roi_percentage, 1),
-                "quality": quality,
-                "source_citation": row['source_citation'],
-                "typical_products": row['typical_products'],
-                "modifiers": {
-                    "location_multiplier": location_modifier,
-                    "traffic_multiplier": traffic_modifier
-                }
-            })
-
-        return {
-            "location": {
-                "location_id": location['location_id'],
-                "zone_name": location['zone_name'],
-                "zone_type": location['zone_type'],
-                "primary_category": location['primary_category'],
-                "traffic_level": location['traffic_level'],
-                "traffic_index": location['traffic_index'],
-                "visibility_factor": location['visibility_factor']
-            },
-            "rows": rows_with_roi,
-            "product_price": product_price,
-            "row_count": len(rows_with_roi)
-        }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"❌ Error calculating row-level ROI: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal server error: {str(e)}"
-        )
-
-
 # Helper functions
 
 def _generate_simple_explanation(result) -> Dict[str, Any]:
@@ -620,111 +497,252 @@ def _generate_simple_explanation(result) -> Dict[str, Any]:
     return explanation
 
 
-def _answer_question(session_data: dict, question: str, session_id: str) -> str:
-    """Answer user questions using REAL Gemini AI analysis with knowledge base"""
+def _answer_question_with_llm(recommendation, product_input: ProductInput, question: str) -> str:
+    """Answer user questions using LLM with full context"""
 
-    # Extract data from session
-    recommendations = session_data['recommendations']
-    product_input = session_data['product_input']
-    explanation = session_data.get('explanation', {})
-
-    # Load knowledge base for context
-    data_dir = Path(__file__).parent.parent / "data"
-    knowledge_base_path = Path(__file__).parent.parent / "knowledge_base"
-
+    # Try to use LLM first
     try:
-        with open(data_dir / "aisle_rows_structure.json", 'r') as f:
-            aisle_data = json.load(f)
-        with open(knowledge_base_path / "retail_psychology_sources.json", 'r') as f:
-            research_data = json.load(f)
+        from utils.llm_client import get_llm_client
+        llm_client = get_llm_client()
+
+        if llm_client and llm_client.enabled:
+            # Prepare context for LLM
+            product_context = {
+                'name': product_input.product_name,
+                'category': product_input.category,
+                'price': product_input.price,
+                'budget': product_input.budget,
+                'target_sales': product_input.target_sales,
+                'expected_roi': product_input.expected_roi
+            }
+
+            # Use the existing answer_followup_question method
+            answer = llm_client.answer_followup_question(
+                question=question,
+                product=product_context,
+                recommendations=recommendation.recommendations,
+                context={'explanation': recommendation.explanation.model_dump() if recommendation.explanation else {}}
+            )
+
+            if answer and answer.strip() and "error" not in answer.lower():
+                return answer
     except Exception as e:
-        logger.error(f"Error loading knowledge base: {e}")
-        aisle_data = {}
-        research_data = {}
+        logger.warning(f"LLM question answering failed: {e}")
 
-    # Use orchestrator to get AI-driven answer
-    try:
-        # Create context with knowledge base
-        top_location = list(recommendations.keys())[0] if recommendations else "Unknown"
-        top_roi = recommendations[top_location] if top_location != "Unknown" else 0
+    # Fallback to pattern-based answers
+    return _answer_question_fallback(recommendation, product_input, question)
 
-        # Build concise prompt for ONE SENTENCE answer
-        category_tip = ""
-        if product_input.category in ["Beverages", "Snacks"]:
-            category_tip = "impulse-driven product needing high visibility"
-        elif product_input.category in ["Dairy", "Bakery"]:
-            category_tip = "convenience purchase, freshness matters"
+
+def _answer_question_fallback(recommendation, product_input: ProductInput, question: str) -> str:
+    """Answer user questions about recommendations"""
+
+    question_lower = question.lower()
+
+    # Pattern matching for common questions
+    if "why" in question_lower and ("recommend" in question_lower or "best" in question_lower or "choice" in question_lower or "location" in question_lower):
+        # Why was X recommended?
+        top_location = list(recommendation.recommendations.keys())[0]
+        top_roi = recommendation.recommendations[top_location]
+
+        answer = f"**{top_location}** was recommended as the top choice (ROI: {top_roi:.2f}) due to several key factors:\n\n"
+        answer += f"1. **Optimal ROI**: This location offers the highest predicted return on investment based on historical sales data\n"
+        answer += f"2. **Category Performance**: {product_input.category} products have shown strong performance in this type of location\n"
+        answer += f"3. **Budget Alignment**: The placement cost fits within your ${product_input.budget:.2f} budget\n"
+        answer += f"4. **Data-Driven**: Prediction based on analysis of 9,360 historical transactions\n\n"
+
+        # Show comparison to alternatives if available
+        if len(recommendation.recommendations) > 1:
+            second_loc = list(recommendation.recommendations.keys())[1]
+            second_roi = recommendation.recommendations[second_loc]
+            diff = top_roi - second_roi
+            pct = (diff / top_roi) * 100
+            answer += f"**Compared to alternatives**: {top_location} outperforms {second_loc} by {diff:.2f} ROI points ({pct:.0f}% better)\n"
+
+        return answer
+
+    elif ("better than" in question_lower or "compare" in question_lower or "versus" in question_lower) and ("end cap" in question_lower or "eye level" in question_lower or "checkout" in question_lower):
+        # Compare two locations
+        top_location = list(recommendation.recommendations.keys())[0]
+        top_roi = recommendation.recommendations[top_location]
+
+        # Get all location names from recommendations
+        all_locations = list(recommendation.recommendations.keys())
+
+        answer = f"**Comparing Placement Locations:**\n\n"
+        answer += f"**Top Recommendation: {top_location}** (ROI: {top_roi:.2f})\n\n"
+
+        # Show top 3 alternatives
+        for i, (loc, roi) in enumerate(list(recommendation.recommendations.items())[1:4], 2):
+            roi_diff = top_roi - roi
+            pct_diff = (roi_diff / top_roi) * 100
+            answer += f"**#{i}: {loc}** (ROI: {roi:.2f})\n"
+            answer += f"   → {roi_diff:.2f} lower ROI ({pct_diff:.0f}% difference)\n\n"
+
+        answer += f"\n**Why {top_location} is better:**\n"
+        answer += f"- Highest predicted ROI based on historical performance\n"
+        answer += f"- Optimal visibility and traffic combination for your product\n"
+        answer += f"- Best category alignment with your {product_input.category} product\n"
+
+        return answer
+
+    elif "competitor" in question_lower:
+        # Competitor comparison
+        top_location = list(recommendation.recommendations.keys())[0]
+        top_roi = recommendation.recommendations[top_location]
+
+        answer = f"**Competitor Analysis for {top_location}:**\n\n"
+        answer += f"**Your Predicted ROI**: {top_roi:.2f}x\n\n"
+        answer += f"**Competitive Positioning:**\n"
+        answer += f"- Your {product_input.category} product is positioned for strong performance\n"
+        answer += f"- This location's {top_roi:.2f}x ROI reflects category-specific historical performance\n"
+        answer += f"- The recommendation accounts for competitive dynamics in this zone\n\n"
+
+        # Show category benchmark
+        answer += f"**Category Benchmark ({product_input.category}):**\n"
+        answer += f"- Analysis based on 9,360 historical transactions\n"
+        answer += f"- Accounts for seasonal patterns and category trends\n"
+        answer += f"- Optimized for your ${product_input.price:.2f} price point\n"
+
+        return answer
+
+    elif "what if" in question_lower or "instead" in question_lower:
+        # What-if / counterfactual question
+        top_location = list(recommendation.recommendations.keys())[0]
+        top_roi = recommendation.recommendations[top_location]
+
+        # Check if they're asking about a specific location
+        mentioned_location = None
+        for loc_name in recommendation.recommendations.keys():
+            if loc_name.lower() in question_lower:
+                mentioned_location = loc_name
+                break
+
+        if mentioned_location and mentioned_location != top_location:
+            alt_roi = recommendation.recommendations[mentioned_location]
+            roi_diff = top_roi - alt_roi
+            pct_diff = (roi_diff / top_roi) * 100
+
+            answer = f"**What if you chose {mentioned_location}?**\n\n"
+            answer += f"**Current Top Choice: {top_location}** (ROI: {top_roi:.2f})\n"
+            answer += f"**Alternative: {mentioned_location}** (ROI: {alt_roi:.2f})\n\n"
+            answer += f"**Impact:**\n"
+            answer += f"- You would lose {roi_diff:.2f} ROI points ({pct_diff:.0f}% reduction)\n"
+            answer += f"- Expected return would drop from {top_roi:.2f}x to {alt_roi:.2f}x\n"
+
+            if pct_diff < 10:
+                answer += f"\n✅ **Small difference**: {mentioned_location} is still a strong alternative (< 10% difference)"
+            elif pct_diff < 25:
+                answer += f"\n⚠️ **Moderate tradeoff**: {mentioned_location} is acceptable but not optimal (10-25% difference)"
+            else:
+                answer += f"\n❌ **Significant loss**: {mentioned_location} would substantially underperform (> 25% difference)"
+
+            return answer
         else:
-            category_tip = "planned purchase, mid-shelf acceptable"
+            return f"Could you specify which location you'd like to compare? Available options: {', '.join(list(recommendation.recommendations.keys())[:5])}"
 
-        # Extract actual question and history separately
-        actual_question = question.split("Previous conversation:")[0].strip()
-        if "Regarding" in actual_question:
-            actual_question = actual_question.split(": ", 1)[1] if ": " in actual_question else actual_question
+    elif "risk" in question_lower or "downside" in question_lower or "concern" in question_lower:
+        # Risk assessment
+        top_location = list(recommendation.recommendations.keys())[0]
+        top_roi = recommendation.recommendations[top_location]
 
-        # Extract history section if present
-        history_section = ""
-        if "Previous conversation:" in question:
-            history_section = question.split("Previous conversation:")[1].strip()
-            # Remove the "Provide a varied response..." instruction from history
-            if "Provide a varied response" in history_section:
-                history_section = history_section.split("Provide a varied response")[0].strip()
+        answer = f"**Risk Assessment for {top_location}:**\n\n"
+        answer += f"**Main Risks:**\n\n"
+        answer += f"1. **Competition Risk**: Other products may already occupy this premium location\n"
+        answer += f"   - Mitigation: Our analysis accounts for category-specific performance\n\n"
+        answer += f"2. **Prediction Uncertainty**: ROI predictions are based on historical averages\n"
+        answer += f"   - Mitigation: We use 80% confidence intervals to quantify uncertainty\n\n"
+        answer += f"3. **Market Changes**: Customer behavior may shift over time\n"
+        answer += f"   - Mitigation: Monitor performance and adjust placement if needed\n\n"
+        answer += f"4. **Budget Constraints**: Premium locations come with higher costs\n"
+        answer += f"   - Mitigation: Our recommendation fits within your ${product_input.budget:.2f} budget\n\n"
 
-        # Build prompt with clear separation of history and current question
-        history_prompt = f"""
-PREVIOUS CONVERSATION:
-{history_section}
+        # Check if there's a close second option (< 10% difference)
+        if len(recommendation.recommendations) > 1:
+            locations = list(recommendation.recommendations.items())
+            second_roi = locations[1][1]
+            pct_diff = ((top_roi - second_roi) / top_roi) * 100
 
-IMPORTANT: Provide a DIFFERENT perspective than previous answers. Focus on new insights, use different language, and highlight different aspects.
-""" if history_section else ""
+            if pct_diff < 10:
+                answer += f"**Safety Note**: {locations[1][0]} (ROI: {second_roi:.2f}) is a close alternative with only {pct_diff:.0f}% lower ROI, providing a good backup option.\n"
 
-        prompt = f"""You are a retail placement expert. Answer in EXACTLY ONE clear, actionable sentence.
+        return answer
 
-CONTEXT:
-- Product: {product_input.product_name} ({product_input.category})
-- Price: ${product_input.price}, Budget: ${product_input.budget}
-- Top Placement: {top_location} with {top_roi:.2f}x ROI
-- Category Type: {category_tip}
-- Key Fact: Eye-level (1.2-1.4m) gives +23% sales; below eye-level drops -25%
-{history_prompt}
-CURRENT QUESTION: {actual_question}
+    elif "alternative" in question_lower or "other" in question_lower or "second" in question_lower:
+        # Alternative locations
+        if len(recommendation.recommendations) > 1:
+            locations = list(recommendation.recommendations.items())
 
-ANSWER IN ONE SENTENCE with fresh insight (Start with an action verb like "Place", "Choose", "Avoid", "Position", "Consider", "Leverage", "Optimize"):"""
+            answer = "**Alternative Placement Options:**\n\n"
 
-        # Create a minimal state object for answer_followup
-        from models.schemas import PlacementState
-        state = PlacementState(
-            product_input=product_input,
-            session_id=session_id
-        )
-        state.final_recommendations = recommendations
-        state.explanation = explanation
+            for i, (loc, roi) in enumerate(locations[1:4], 2):  # Top 2-4
+                answer += f"**#{i}: {loc}** (ROI: {roi:.2f})\n"
 
-        # Call Gemini AI for concise answer
-        ai_answer = orchestrator.answer_followup(
-            session_id=session_id,
-            question=prompt,
-            state=state
-        )
+                # Compare to top recommendation
+                top_roi = locations[0][1]
+                diff = top_roi - roi
+                diff_pct = (diff / top_roi) * 100
+                answer += f"   - {diff:.2f} lower ROI than top choice ({diff_pct:.0f}% difference)\n\n"
 
-        # Ensure it's truly one sentence (take first sentence only)
-        sentences = ai_answer.split('.')
-        if len(sentences) > 1:
-            ai_answer = sentences[0] + '.'
+            answer += f"\n**Recommendation**: The top choice ({locations[0][0]}) offers the best ROI for your {product_input.category} product and ${product_input.budget:.2f} budget.\n"
 
-        return ai_answer
-
-    except Exception as e:
-        logger.error(f"Error getting AI answer: {e}")
-
-        # Fallback: Return explanation if available
-        if isinstance(explanation, dict) and 'feature_importance' in explanation:
-            return explanation['feature_importance']
-        elif hasattr(explanation, 'feature_importance'):
-            return explanation.feature_importance
+            return answer
         else:
-            return f"Based on analysis, {top_location} offers the best ROI of {top_roi:.2f}x for your {product_input.category} product."
+            return "Only one location was found within your budget constraints."
 
+    elif "confidence" in question_lower or "sure" in question_lower or "certain" in question_lower:
+        # Confidence assessment
+        top_location = list(recommendation.recommendations.keys())[0]
+
+        # Note: The Recommendation object doesn't have roi_predictions, so we'll provide a general confidence answer
+        answer = f"**Confidence Assessment for {top_location}:**\n\n"
+        answer += f"**Prediction Confidence:**\n"
+        answer += f"- ROI predictions are based on 9,360 historical transactions\n"
+        answer += f"- Category-specific performance data for {product_input.category} products\n"
+        answer += f"- Analyzed patterns across multiple similar products in the same price range\n\n"
+        answer += f"**Confidence Level**: Moderate to High\n"
+        answer += f"- Historical data provides strong evidence for placement effectiveness\n"
+        answer += f"- Category alignment ({product_input.category}) increases prediction reliability\n"
+        answer += f"- Price point (${product_input.price:.2f}) is well-represented in our data\n\n"
+        answer += "⚠️ **Note**: Actual results may vary based on seasonal trends, competitive changes, and execution quality."
+
+        return answer
+
+    elif "budget" in question_lower or "increase" in question_lower or "more money" in question_lower:
+        # Budget question
+        current_budget = product_input.budget
+        top_location = list(recommendation.recommendations.keys())[0]
+        top_roi = recommendation.recommendations[top_location]
+
+        answer = f"**Budget Analysis:**\n\n"
+        answer += f"**Current Budget**: ${current_budget:.2f}\n"
+        answer += f"**Current Best Option**: {top_location} (ROI: {top_roi:.2f})\n\n"
+
+        # Extract budget increase from question if mentioned
+        import re
+        budget_match = re.search(r'\$?(\d+(?:,\d{3})*(?:\.\d{2})?)', question_lower)
+        suggested_budget = None
+        if budget_match:
+            suggested_budget = float(budget_match.group(1).replace(',', ''))
+
+        if suggested_budget and suggested_budget > current_budget:
+            increase_pct = ((suggested_budget - current_budget) / current_budget) * 100
+            answer += f"**Proposed Increase**: ${current_budget:.2f} → ${suggested_budget:.2f} (+{increase_pct:.0f}%)\n\n"
+            answer += f"With a higher budget, you could potentially:\n"
+            answer += f"- Access premium end-cap locations with better visibility\n"
+            answer += f"- Secure multiple placement spots for broader reach\n"
+            answer += f"- Negotiate better positioning within high-traffic zones\n\n"
+            answer += f"However, {top_location} already offers excellent ROI at your current budget. Increasing budget doesn't always guarantee proportionally better returns.\n"
+        else:
+            answer += f"💡 **Budget Optimization Tip**:\n"
+            answer += f"- Your current budget of ${current_budget:.2f} is well-utilized\n"
+            answer += f"- The recommended location offers {top_roi:.2f}x ROI\n"
+            answer += f"- Focus on execution rather than budget increases for best results\n"
+
+        return answer
+
+    else:
+        # Generic answer
+        return f"Based on your question, I recommend reviewing the top recommendation: **{list(recommendation.recommendations.keys())[0]}** with ROI of {list(recommendation.recommendations.values())[0]:.2f}. For more specific information, please ask about competitors, alternatives, or confidence levels."
 
 
 if __name__ == "__main__":

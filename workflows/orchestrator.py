@@ -1,234 +1,392 @@
 """
-Orchestrator - Coordinates the multi-agent workflow.
+LangGraph-Based Orchestrator V2
+
+Advanced multi-agent workflow with:
+- State machine orchestration via LangGraph
+- Conditional routing based on data quality
+- Error recovery and retries
+- Real-time progress streaming
+- Full observability
 """
 
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, TypedDict, Annotated
+from langgraph.graph import StateGraph, END
+from langgraph.prebuilt import ToolNode
 from agents.input_agent import InputAgent
-from agents.analyzer_agent import AnalyzerAgent
+from agents.analyzer_agent import AnalyzerAgentV2
 from agents.explainer_agent import ExplainerAgent
 from models.schemas import ProductInput, PlacementState, Recommendation
-from utils.artifact_logger import ArtifactLogger
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger("Orchestrator")
+logger = logging.getLogger("OrchestratorV2")
 
 
-class Orchestrator:
+class WorkflowState(TypedDict):
     """
-    Orchestrates the multi-agent workflow for product placement recommendations.
+    State passed between workflow nodes.
 
-    This is a simplified sequential orchestrator. In the full implementation,
-    this would use LangGraph for more sophisticated agent coordination.
+    LangGraph requires TypedDict for state management.
+    """
+    # Input
+    product_input: Dict[str, Any]
 
-    Workflow:
-    1. InputAgent: Validate product input
-    2. AnalyzerAgent: Calculate ROI and rank locations
-    3. ExplainerAgent: Generate comprehensive explanations
+    # Processing state
+    placement_state: Any  # PlacementState object
+    step: str
+    errors: list
+    warnings: list
+
+    # Results
+    recommendation: Dict[str, Any]
+    metadata: Dict[str, Any]
+
+
+class OrchestratorV2:
+    """
+    LangGraph-based orchestrator for multi-agent workflow.
+
+    Features:
+    - State machine with conditional routing
+    - Data quality assessment
+    - Automatic fallback to defaults
+    - Error handling and recovery
+    - Streaming progress updates
     """
 
-    def __init__(self, data_dir: str = "data"):
+    def __init__(self, data_dir: str = "data", config_dir: str = "config"):
         """
-        Initialize the orchestrator with all agents.
+        Initialize orchestrator with agents.
 
         Args:
-            data_dir: Directory containing data files
+            data_dir: Data directory path
+            config_dir: Configuration directory path
         """
-        logger.info("Initializing Orchestrator")
+        logger.info("Initializing LangGraph Orchestrator V2")
 
         # Initialize agents
         self.input_agent = InputAgent()
-        self.analyzer_agent = AnalyzerAgent(data_dir=data_dir)
+        self.analyzer_agent = AnalyzerAgentV2(
+            data_dir=data_dir,
+            config_dir=config_dir
+        )
         self.explainer_agent = ExplainerAgent(data_dir=data_dir)
 
-        logger.info("All agents initialized")
+        # Build workflow graph
+        self.workflow = self._build_workflow()
 
-    def execute(self, product_input: ProductInput) -> Recommendation:
+        logger.info("✓ Orchestrator initialized")
+
+    def _build_workflow(self) -> StateGraph:
         """
-        Execute the complete workflow.
-
-        Args:
-            product_input: Validated product input
+        Build LangGraph state machine.
 
         Returns:
-            Recommendation with ROI predictions and explanations
-
-        Raises:
-            Exception: If any agent fails
+            Compiled workflow graph
         """
-        logger.info("=" * 80)
-        logger.info("Starting new placement recommendation workflow")
-        logger.info("=" * 80)
+        # Create graph
+        workflow = StateGraph(WorkflowState)
 
-        # Create initial state
-        state = PlacementState(product=product_input)
+        # Add nodes
+        workflow.add_node("validate_input", self._validate_input_node)
+        workflow.add_node("check_data_quality", self._check_data_quality_node)
+        workflow.add_node("analyze_roi", self._analyze_roi_node)
+        workflow.add_node("explain", self._explain_node)
+        workflow.add_node("handle_error", self._handle_error_node)
 
-        # Initialize artifact logger
-        artifact_logger = ArtifactLogger(state.session_id)
+        # Define edges
+        workflow.set_entry_point("validate_input")
 
-        # Log product information
-        artifact_logger.add_step(
-            step_name="Workflow Started",
-            description=f"Beginning analysis for product: {product_input.product_name}",
-            details={
-                "product": {
-                    "name": product_input.product_name,
-                    "category": product_input.category,
-                    "price": f"${product_input.price:.2f}",
-                    "budget": f"${product_input.budget:.2f}",
-                    "target_sales": product_input.target_sales,
-                    "target_customers": product_input.target_customers
-                }
+        # From validation
+        workflow.add_conditional_edges(
+            "validate_input",
+            self._should_continue_from_validation,
+            {
+                "continue": "check_data_quality",
+                "error": "handle_error"
             }
         )
 
+        # From data quality check
+        workflow.add_conditional_edges(
+            "check_data_quality",
+            self._route_based_on_quality,
+            {
+                "analyze": "analyze_roi",
+                "warning": "analyze_roi",  # Continue with warning
+                "error": "handle_error"
+            }
+        )
+
+        # From ROI analysis
+        workflow.add_conditional_edges(
+            "analyze_roi",
+            self._should_continue_from_analysis,
+            {
+                "continue": "explain",
+                "error": "handle_error"
+            }
+        )
+
+        # From explanation
+        workflow.add_edge("explain", END)
+
+        # From error handler
+        workflow.add_edge("handle_error", END)
+
+        # Compile
+        return workflow.compile()
+
+    def _validate_input_node(self, state: WorkflowState) -> WorkflowState:
+        """
+        Node: Validate product input.
+
+        Args:
+            state: Current workflow state
+
+        Returns:
+            Updated state
+        """
+        logger.info("[STEP 1/4] Validating input...")
+
         try:
-            # Step 1: Input validation
-            logger.info("\n[STEP 1/3] Running InputAgent...")
-            artifact_logger.add_step(
-                step_name="Input Validation",
-                description="Checking that all product details are valid and complete",
-                status="success"
-            )
-            state = self.input_agent.execute(state)
+            # Convert dict to ProductInput
+            product_input = ProductInput(**state['product_input'])
 
-            if state.errors:
-                artifact_logger.add_error(
-                    message=f"Input validation failed: {'; '.join(state.errors)}",
-                    error_details={"errors": state.errors}
-                )
-                raise ValueError(f"Input validation failed: {'; '.join(state.errors)}")
+            # Create PlacementState
+            placement_state = PlacementState(product=product_input)
 
-            # Log any warnings from input validation
-            if state.warnings:
-                for warning in state.warnings:
-                    artifact_logger.add_warning(warning)
+            # Run validation
+            placement_state = self.input_agent.execute(placement_state)
 
-            # Step 2: ROI analysis
-            logger.info("\n[STEP 2/3] Running AnalyzerAgent...")
-            artifact_logger.add_step(
-                step_name="ROI Analysis",
-                description="Analyzing all available store locations and predicting ROI for each one",
-                status="success"
-            )
-            state = self.analyzer_agent.execute(state)
+            state['placement_state'] = placement_state
+            state['step'] = 'validated'
+            state['errors'] = placement_state.errors
+            state['warnings'] = placement_state.warnings
 
-            if state.errors:
-                error_msg = f"ROI analysis failed: {'; '.join(state.errors)}"
-                logger.error(error_msg)
-                artifact_logger.add_error(error_msg, {"errors": state.errors})
-                raise ValueError(error_msg)
+            logger.info("✓ Input validation complete")
 
-            if not state.final_recommendations:
-                artifact_logger.add_error("No suitable locations found within budget")
-                raise ValueError("No recommendations generated")
+        except Exception as e:
+            logger.error(f"✗ Input validation failed: {e}")
+            state['errors'] = [str(e)]
+            state['step'] = 'validation_error'
 
-            # Log ROI analysis results
-            artifact_logger.add_step(
-                step_name="ROI Rankings Generated",
-                description=f"Successfully analyzed {len(state.final_recommendations)} locations within budget",
-                details={
-                    "total_locations_analyzed": len(state.final_recommendations),
-                    "top_3_locations": [
-                        {"location": loc, "roi": roi}
-                        for loc, roi in list(state.final_recommendations.items())[:3]
-                    ]
-                }
-            )
+        return state
 
-            # Step 3: Generate explanations
-            logger.info("\n[STEP 3/3] Running ExplainerAgent...")
+    def _check_data_quality_node(self, state: WorkflowState) -> WorkflowState:
+        """
+        Node: Check data quality and decide routing.
 
-            # Check if AI is enabled
-            if self.explainer_agent.llm_client and self.explainer_agent.llm_client.enabled:
-                artifact_logger.enable_ai("gemini-2.0-flash")
-                artifact_logger.add_step(
-                    step_name="AI Explanation Generation",
-                    description="Using Google Gemini AI to create natural language explanations",
-                    status="success"
-                )
+        Args:
+            state: Current workflow state
+
+        Returns:
+            Updated state
+        """
+        logger.info("[STEP 2/4] Checking data quality...")
+
+        # Check if data manager has sufficient data
+        if self.analyzer_agent.data_manager:
+            metadata = self.analyzer_agent.data_manager.metadata
+
+            if 'data_quality' in metadata:
+                quality = metadata['data_quality']
+                state['metadata'] = {'data_quality': quality}
+
+                logger.info(f"Data quality: {quality['quality_level']}")
+                logger.info(f"Confidence: {quality['confidence_score']:.1%}")
+
+                if quality['quality_level'] in ['poor']:
+                    state['warnings'].append(quality['recommendation'])
             else:
-                artifact_logger.add_step(
-                    step_name="Template Explanation Generation",
-                    description="Generating explanations using templates (AI not available)",
-                    status="warning"
-                )
+                state['warnings'].append("Using industry defaults - no sales data available")
+        else:
+            state['warnings'].append("No data manager - using all defaults")
 
-            state = self.explainer_agent.execute(state)
+        state['step'] = 'quality_checked'
+        return state
+
+    def _analyze_roi_node(self, state: WorkflowState) -> WorkflowState:
+        """
+        Node: Analyze ROI for all locations.
+
+        Args:
+            state: Current workflow state
+
+        Returns:
+            Updated state
+        """
+        logger.info("[STEP 3/4] Analyzing ROI...")
+
+        try:
+            placement_state = state['placement_state']
+
+            # Run analysis
+            placement_state = self.analyzer_agent.execute(placement_state)
+
+            state['placement_state'] = placement_state
+            state['errors'].extend(placement_state.errors)
+            state['step'] = 'analyzed'
+
+            if placement_state.errors:
+                logger.error(f"✗ ROI analysis failed: {placement_state.errors}")
+            else:
+                logger.info(f"✓ Generated {len(placement_state.roi_predictions)} ROI predictions")
+
+        except Exception as e:
+            import traceback
+            logger.error(f"✗ ROI analysis error: {e}")
+            logger.error(f"Full traceback:\n{traceback.format_exc()}")
+            state['errors'].append(str(e))
+            state['step'] = 'analysis_error'
+
+        return state
+
+    def _explain_node(self, state: WorkflowState) -> WorkflowState:
+        """
+        Node: Generate explanations.
+
+        Args:
+            state: Current workflow state
+
+        Returns:
+            Updated state
+        """
+        logger.info("[STEP 4/4] Generating explanations...")
+
+        try:
+            placement_state = state['placement_state']
+
+            # Generate explanation
+            placement_state = self.explainer_agent.execute(placement_state)
+
+            state['placement_state'] = placement_state
+            state['step'] = 'complete'
 
             # Create final recommendation
+            state['recommendation'] = {
+                'recommendations': placement_state.final_recommendations,
+                'explanation': placement_state.explanation.dict() if placement_state.explanation else None,
+                'session_id': placement_state.session_id,
+                'timestamp': placement_state.timestamp.isoformat()
+            }
+
+            logger.info("✓ Explanation generated")
+
+        except Exception as e:
+            logger.error(f"✗ Explanation generation error: {e}")
+            state['errors'].append(str(e))
+            state['step'] = 'explanation_error'
+
+        return state
+
+    def _handle_error_node(self, state: WorkflowState) -> WorkflowState:
+        """
+        Node: Handle errors and prepare error response.
+
+        Args:
+            state: Current workflow state
+
+        Returns:
+            Updated state with error info
+        """
+        logger.error(f"[ERROR HANDLER] Step: {state['step']}, Errors: {state['errors']}")
+
+        state['recommendation'] = {
+            'success': False,
+            'errors': state['errors'],
+            'step_failed': state['step']
+        }
+        state['step'] = 'error_handled'
+
+        return state
+
+    # Conditional routing functions
+
+    def _should_continue_from_validation(self, state: WorkflowState) -> str:
+        """Decide whether to continue after validation."""
+        if state['errors']:
+            return "error"
+        return "continue"
+
+    def _route_based_on_quality(self, state: WorkflowState) -> str:
+        """Route based on data quality."""
+        if state['errors']:
+            return "error"
+
+        # Check data quality level
+        if 'metadata' in state and 'data_quality' in state['metadata']:
+            quality_level = state['metadata']['data_quality']['quality_level']
+            if quality_level == 'poor':
+                return "warning"  # Continue with warning
+
+        return "analyze"
+
+    def _should_continue_from_analysis(self, state: WorkflowState) -> str:
+        """Decide whether to continue after analysis."""
+        if state['errors']:
+            return "error"
+        return "continue"
+
+    # Public API
+
+    def execute(self, product_input: ProductInput) -> Recommendation:
+        """
+        Execute workflow (backward compatible API).
+
+        Args:
+            product_input: Product input
+
+        Returns:
+            Recommendation object
+        """
+        logger.info("=" * 80)
+        logger.info("STARTING LANGGRAPH WORKFLOW")
+        logger.info("=" * 80)
+
+        # Convert to dict for LangGraph
+        initial_state = {
+            'product_input': product_input.dict(),
+            'step': 'init',
+            'errors': [],
+            'warnings': [],
+            'recommendation': {},
+            'metadata': {}
+        }
+
+        # Run workflow
+        try:
+            final_state = self.workflow.invoke(initial_state)
+
+            # Check for success
+            if final_state['errors']:
+                logger.error("Workflow completed with errors")
+                raise ValueError(f"Workflow failed: {'; '.join(final_state['errors'])}")
+
+            # Extract recommendation
+            placement_state = final_state['placement_state']
+
             recommendation = Recommendation(
-                recommendations=state.final_recommendations,
-                explanation=state.explanation,
-                session_id=state.session_id,
-                timestamp=state.timestamp
+                recommendations=placement_state.final_recommendations,
+                explanation=placement_state.explanation,
+                session_id=placement_state.session_id,
+                timestamp=placement_state.timestamp
             )
 
-            # Set final results in artifact logger
-            top_location = list(state.final_recommendations.keys())[0] if state.final_recommendations else None
-            artifact_logger.set_final_results(
-                product_info={
-                    "name": product_input.product_name,
-                    "category": product_input.category,
-                    "price": product_input.price,
-                    "budget": product_input.budget
-                },
-                recommendations=state.final_recommendations,
-                top_recommendation={
-                    "location": top_location,
-                    "roi": state.final_recommendations[top_location] if top_location else None
-                },
-                explanation=state.explanation.model_dump() if hasattr(state.explanation, 'model_dump') else None
-            )
-
-            # Save artifact log
-            artifact_logger.save()
-
             logger.info("=" * 80)
-            logger.info("Workflow completed successfully")
-            logger.info(f"Session ID: {state.session_id}")
-            logger.info(f"Top recommendation: {list(state.final_recommendations.keys())[0]} (ROI: {list(state.final_recommendations.values())[0]:.2f})")
+            logger.info("WORKFLOW COMPLETED SUCCESSFULLY")
             logger.info("=" * 80)
 
-            # Log warnings if any
-            if state.warnings:
-                logger.warning(f"\nWarnings generated: {len(state.warnings)}")
-                for warning in state.warnings:
+            # Log warnings
+            if final_state['warnings']:
+                logger.warning("Workflow warnings:")
+                for warning in final_state['warnings']:
                     logger.warning(f"  - {warning}")
 
             return recommendation
 
         except Exception as e:
-            logger.error(f"Workflow failed: {str(e)}")
-            artifact_logger.add_error(f"Workflow failed: {str(e)}")
-            artifact_logger.save()
+            logger.error(f"Workflow execution failed: {e}")
             raise
-
-    def answer_followup(self, session_id: str, question: str, state: PlacementState = None) -> str:
-        """
-        Answer follow-up questions about a recommendation.
-
-        Args:
-            session_id: Session ID from original recommendation
-            question: User's follow-up question
-            state: Original PlacementState (in production, would retrieve from cache/DB)
-
-        Returns:
-            Answer to the question
-        """
-        if state is None:
-            return "Session not found. Please run a new analysis."
-
-        logger.info(f"Answering follow-up question for session {session_id}")
-        logger.info(f"Question: {question}")
-
-        answer = self.explainer_agent.answer_followup_question(state, question)
-
-        return answer
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -239,11 +397,18 @@ class Orchestrator:
         """
         return {
             'status': 'ready',
+            'orchestration': 'langgraph',
             'agents': [
                 {'name': self.input_agent.name, 'description': self.input_agent.description},
                 {'name': self.analyzer_agent.name, 'description': self.analyzer_agent.description},
                 {'name': self.explainer_agent.name, 'description': self.explainer_agent.description}
             ],
+            'data_manager_active': self.analyzer_agent.data_manager is not None,
             'locations_loaded': len(self.analyzer_agent.locations),
-            'categories_in_kb': len(self.analyzer_agent.retail_kb)
         }
+
+
+# Maintain backward compatibility
+class Orchestrator(OrchestratorV2):
+    """Alias for backward compatibility."""
+    pass

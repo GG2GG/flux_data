@@ -1,0 +1,288 @@
+{
+  "info": {
+    "name": "Retail Product Placement API (with Follow-ups)",
+    "description": "API for retail product placement recommendations with ROI analysis and follow-up questions",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "session_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Server is healthy\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"healthy\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/health",
+          "host": ["{{base_url}}"],
+          "path": ["api", "health"]
+        },
+        "description": "Check if the API is running and healthy. Shows data quality metrics."
+      }
+    },
+    {
+      "name": "2. Analyze - Premium Energy Drink",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save session_id for follow-up questions",
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set(\"session_id\", jsonData.session_id);",
+              "console.log(\"Session ID saved: \" + jsonData.session_id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_name\": \"Premium Energy Drink\",\n  \"category\": \"Beverages\",\n  \"price\": 3.99,\n  \"budget\": 5000,\n  \"target_sales\": 500,\n  \"target_customers\": \"Young adults 18-35, fitness enthusiasts\",\n  \"expected_roi\": 1.5\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["api", "analyze"]
+        },
+        "description": "Get placement recommendations. Session ID will be automatically saved for follow-up questions."
+      }
+    },
+    {
+      "name": "3. Follow-up - Why This Location?",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"session_id\": \"{{session_id}}\",\n  \"question\": \"Why is this location the best choice for my product?\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/defend",
+          "host": ["{{base_url}}"],
+          "path": ["api", "defend"]
+        },
+        "description": "Ask why the recommended location is best. Uses session_id from previous request."
+      }
+    },
+    {
+      "name": "3. Follow-up - Compare Locations",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"session_id\": \"{{session_id}}\",\n  \"question\": \"Why is End Cap better than Eye Level for this product?\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/defend",
+          "host": ["{{base_url}}"],
+          "path": ["api", "defend"]
+        },
+        "description": "Compare different locations to understand trade-offs."
+      }
+    },
+    {
+      "name": "3. Follow-up - What If Question",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"session_id\": \"{{session_id}}\",\n  \"question\": \"What if I chose Checkout instead? What would happen to my ROI?\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/defend",
+          "host": ["{{base_url}}"],
+          "path": ["api", "defend"]
+        },
+        "description": "Ask counterfactual questions about alternative placements."
+      }
+    },
+    {
+      "name": "3. Follow-up - Ask About Risks",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"session_id\": \"{{session_id}}\",\n  \"question\": \"What are the main risks with this placement recommendation?\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/defend",
+          "host": ["{{base_url}}"],
+          "path": ["api", "defend"]
+        },
+        "description": "Understand potential risks and downsides."
+      }
+    },
+    {
+      "name": "3. Follow-up - Confidence Level",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"session_id\": \"{{session_id}}\",\n  \"question\": \"How confident are you in this 2.92x ROI prediction?\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/defend",
+          "host": ["{{base_url}}"],
+          "path": ["api", "defend"]
+        },
+        "description": "Ask about prediction confidence and data quality."
+      }
+    },
+    {
+      "name": "3. Follow-up - Budget Question",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"session_id\": \"{{session_id}}\",\n  \"question\": \"If I increase my budget to $7000, what better locations become available?\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/defend",
+          "host": ["{{base_url}}"],
+          "path": ["api", "defend"]
+        },
+        "description": "Ask about budget trade-offs and premium options."
+      }
+    },
+    {
+      "name": "2. Analyze - Organic Yogurt",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set(\"session_id\", jsonData.session_id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_name\": \"Organic Greek Yogurt\",\n  \"category\": \"Dairy\",\n  \"price\": 4.50,\n  \"budget\": 3000,\n  \"target_sales\": 400,\n  \"target_customers\": \"Health-conscious families\",\n  \"expected_roi\": 1.8\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["api", "analyze"]
+        },
+        "description": "Analyze placement for Dairy category product"
+      }
+    },
+    {
+      "name": "2. Analyze - Potato Chips (Snacks)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set(\"session_id\", jsonData.session_id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_name\": \"Kettle Cooked Potato Chips\",\n  \"category\": \"Snacks\",\n  \"price\": 3.49,\n  \"budget\": 4000,\n  \"target_sales\": 600,\n  \"target_customers\": \"Snack lovers, party hosts\",\n  \"expected_roi\": 1.6\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["api", "analyze"]
+        },
+        "description": "Analyze placement for Snacks category"
+      }
+    }
+  ]
+}

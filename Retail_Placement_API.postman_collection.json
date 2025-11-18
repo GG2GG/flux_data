@@ -1,0 +1,168 @@
+{
+  "info": {
+    "name": "Retail Product Placement API",
+    "description": "API for retail product placement recommendations with ROI analysis",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/api/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "health"]
+        },
+        "description": "Check if the API is running and healthy"
+      }
+    },
+    {
+      "name": "Analyze Placement - Premium Energy Drink",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_name\": \"Premium Energy Drink\",\n  \"category\": \"Beverages\",\n  \"price\": 3.99,\n  \"budget\": 5000,\n  \"target_sales\": 500,\n  \"target_customers\": \"Young adults 18-35, fitness enthusiasts\",\n  \"expected_roi\": 1.5\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/analyze",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "analyze"]
+        },
+        "description": "Get placement recommendations for a premium energy drink"
+      }
+    },
+    {
+      "name": "Analyze Placement - Organic Yogurt",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_name\": \"Organic Greek Yogurt\",\n  \"category\": \"Dairy\",\n  \"price\": 4.50,\n  \"budget\": 3000,\n  \"target_sales\": 400,\n  \"target_customers\": \"Health-conscious families\",\n  \"expected_roi\": 1.8\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/analyze",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "analyze"]
+        },
+        "description": "Get placement recommendations for organic yogurt"
+      }
+    },
+    {
+      "name": "Analyze Placement - Artisan Bread",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_name\": \"Artisan Sourdough Bread\",\n  \"category\": \"Bakery\",\n  \"price\": 5.99,\n  \"budget\": 2500,\n  \"target_sales\": 300,\n  \"target_customers\": \"Food enthusiasts, home cooks\",\n  \"expected_roi\": 2.0\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/analyze",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "analyze"]
+        },
+        "description": "Get placement recommendations for artisan bread"
+      }
+    },
+    {
+      "name": "Analyze Placement - Potato Chips",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_name\": \"Kettle Cooked Potato Chips\",\n  \"category\": \"Snacks\",\n  \"price\": 3.49,\n  \"budget\": 4000,\n  \"target_sales\": 600,\n  \"target_customers\": \"Snack lovers, party hosts\",\n  \"expected_roi\": 1.6\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/analyze",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "analyze"]
+        },
+        "description": "Get placement recommendations for potato chips"
+      }
+    },
+    {
+      "name": "Analyze Placement - Hand Soap",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_name\": \"Natural Hand Soap\",\n  \"category\": \"Personal Care\",\n  \"price\": 6.99,\n  \"budget\": 2000,\n  \"target_sales\": 250,\n  \"target_customers\": \"Eco-conscious consumers\",\n  \"expected_roi\": 1.4\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/analyze",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "analyze"]
+        },
+        "description": "Get placement recommendations for hand soap"
+      }
+    },
+    {
+      "name": "Analyze Placement - Low Budget",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_name\": \"Budget Cola\",\n  \"category\": \"Beverages\",\n  \"price\": 1.99,\n  \"budget\": 1000,\n  \"target_sales\": 800,\n  \"target_customers\": \"Budget-conscious shoppers\",\n  \"expected_roi\": 1.2\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/analyze",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "analyze"]
+        },
+        "description": "Get placement recommendations with a low budget constraint"
+      }
+    }
+  ]
+}

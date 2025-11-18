@@ -1,0 +1,31 @@
+{
+  "computation_timestamp": "2025-11-18T07:00:26.256263",
+  "data_sources": {
+    "sales_data": true,
+    "sales_file": "/app/data/input/sales_history.csv"
+  },
+  "sales_summary": {
+    "total_transactions": 9360,
+    "unique_products": 60,
+    "unique_locations": 20,
+    "date_range": [
+      "2024-01-01",
+      "2024-12-23"
+    ],
+    "total_revenue": 14574887.46999999,
+    "total_units": 1583708,
+    "has_promotion_data": true
+  },
+  "data_quality": {
+    "quality_level": "excellent",
+    "confidence_score": 0.95,
+    "recommendation": "Data quality is excellent. Recommendations are highly reliable."
+  },
+  "metrics_summary": {
+    "total_metrics": 20,
+    "computed_from_sales": 15,
+    "using_defaults": 5,
+    "high_confidence": 15,
+    "computation_rate": 75.0
+  }
+}
