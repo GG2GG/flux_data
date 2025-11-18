@@ -16,121 +16,145 @@ public class DialogueManager : MonoBehaviour
     public Button choice3Button;
     public GameObject continuePrompt;
 
+    // --- Private State ---
     private PlayerMovement bobMovement;
-    private GambitAgent gambitAgent; 
-    
-    // <-- NEW STATES ADDED
+    private GambitAgent gambitAgent;
+    private APIController apiController; 
+
     private enum DialogueState { Inactive, ShowingManagerLine, ShowingPlayerChoices, ShowingSingleLine, ShowingManagerResponse, 
-                                 ShowingGambitIntro, ShowingGambitChoices, ShowingGambitResponse }
+                                 ShowingGambitIntro, ShowingGambitChoices, ShowingGambitResponse, ShowingGambitReconvo,
+                                 AwaitingApiCall }
     private DialogueState currentState;
     
-    private int chosenGambitRow; // <-- To remember the choice
+    private int chosenGambitRow;
+    private string chosenGambitCategory; 
 
     void Start()
     {
         bobMovement = bob.GetComponent<PlayerMovement>();
         gambitAgent = FindObjectOfType<GambitAgent>();
+        apiController = FindObjectOfType<APIController>(); 
         StartManagerConversation();
     }
 
     void Update()
     {
-        // Manager convo
         if (currentState == DialogueState.ShowingManagerLine && Input.GetKeyDown(KeyCode.X))
-        {
             ShowPlayerChoices();
-        }
         else if (currentState == DialogueState.ShowingManagerResponse && Input.GetKeyDown(KeyCode.X))
         {
             EndConversation(); 
             if (gambitAgent != null) gambitAgent.StartApproach(bob.transform);
         }
-        // Shopper convo
         else if (currentState == DialogueState.ShowingSingleLine && Input.GetKeyDown(KeyCode.X))
-        {
             EndConversation();
-        }
-        // --- NEW GAMBIT CONVO FLOW ---
         else if (currentState == DialogueState.ShowingGambitIntro && Input.GetKeyDown(KeyCode.X))
         {
-            ShowGambitChoiceButtons(); // Move to the 3 choices
+            gambitAgent.hasIntroducedHimself = true; 
+            ShowGambitChoiceButtons(); 
         }
+        else if (currentState == DialogueState.ShowingGambitReconvo && Input.GetKeyDown(KeyCode.X))
+            ShowGambitChoiceButtons();
         else if (currentState == DialogueState.ShowingGambitResponse && Input.GetKeyDown(KeyCode.X))
         {
             EndConversation();
-            gambitAgent.GoToRow(chosenGambitRow); // Tell agent to move
+            gambitAgent.GoToRow(chosenGambitRow);
+        }
+        else if (currentState == DialogueState.AwaitingApiCall && Input.GetKeyDown(KeyCode.X))
+        {
+            EndConversation();
+            apiController.StartDemoApiCall(chosenGambitRow, chosenGambitCategory);
         }
     }
     
-    // --- NEW: Renamed from ShowGambitChoices ---
+    public void ShowGambitFinalLine(string line, int rowNum)
+    {
+        if (currentState != DialogueState.Inactive) return; 
+
+        bobMovement.enabled = false;
+        dialoguePanel.SetActive(true);
+        speakerNameText.text = "The Placement Gambit";
+        dialogueText.text = line;
+        
+        continuePrompt.SetActive(true);
+        choice1Button.gameObject.SetActive(false);
+        choice2Button.gameObject.SetActive(false);
+        choice3Button.gameObject.SetActive(false);
+        
+        currentState = DialogueState.AwaitingApiCall; 
+        chosenGambitRow = rowNum; 
+        
+        if(rowNum == 1) chosenGambitCategory = "Dry Goods & Packaged Foods";
+        if(rowNum == 2) chosenGambitCategory = "Health & Beauty";
+        if(rowNum == 3) chosenGambitCategory = "General Merchandise & Electronics";
+    }
+
+    public void StartGambitReconvo()
+    {
+        if (currentState != DialogueState.Inactive) return;
+        currentState = DialogueState.ShowingGambitReconvo; 
+        bobMovement.enabled = false;
+        dialoguePanel.SetActive(true);
+        speakerNameText.text = "The Placement Gambit";
+        dialogueText.text = "Tell me, which product category are you targeting?";
+        continuePrompt.SetActive(true);
+        choice1Button.gameObject.SetActive(false);
+        choice2Button.gameObject.SetActive(false);
+        choice3Button.gameObject.SetActive(false);
+    }
+
     public void ShowGambitIntro()
     {
         bobMovement.enabled = false;
         dialoguePanel.SetActive(true);
         currentState = DialogueState.ShowingGambitIntro;
-
         speakerNameText.text = "The Placement Gambit";
         dialogueText.text = "Don't listen to him. I am The Placement Gambit. Tell me which type of product do you want.";
-
-        continuePrompt.SetActive(true); // Show "Press X"
+        continuePrompt.SetActive(true);
         choice1Button.gameObject.SetActive(false);
         choice2Button.gameObject.SetActive(false);
         choice3Button.gameObject.SetActive(false);
     }
 
-    // --- NEW: This function shows the 3 buttons ---
     void ShowGambitChoiceButtons()
     {
         currentState = DialogueState.ShowingGambitChoices;
         speakerNameText.text = "Bob";
-        dialogueText.text = ""; // Bob is choosing
-
+        dialogueText.text = ""; 
         continuePrompt.SetActive(false);
         choice1Button.gameObject.SetActive(true);
         choice2Button.gameObject.SetActive(true);
         choice3Button.gameObject.SetActive(true);
-
-        // Set button text
         choice1Button.GetComponentInChildren<TextMeshProUGUI>().text = "Dry Goods & Packaged Foods";
         choice2Button.GetComponentInChildren<TextMeshProUGUI>().text = "Health & Beauty";
         choice3Button.GetComponentInChildren<TextMeshProUGUI>().text = "General Merchandise & Electronics";
-
-        // Wire up buttons
         choice1Button.onClick.RemoveAllListeners();
         choice2Button.onClick.RemoveAllListeners();
         choice3Button.onClick.RemoveAllListeners(); 
-
         choice1Button.onClick.AddListener(OnGambitChoice1);
         choice2Button.onClick.AddListener(OnGambitChoice2);
         choice3Button.onClick.AddListener(OnGambitChoice3);
     }
 
-    // --- NEW: These now lead to the "Follow me" line ---
     void OnGambitChoice1() { ShowGambitResponse(1); }
     void OnGambitChoice2() { ShowGambitResponse(2); }
     void OnGambitChoice3() { ShowGambitResponse(3); }
 
-    // --- NEW: This function shows the "Follow me" line ---
     void ShowGambitResponse(int rowNum)
     {
-        this.chosenGambitRow = rowNum; // Remember the choice
+        this.chosenGambitRow = rowNum; 
         currentState = DialogueState.ShowingGambitResponse;
-
         speakerNameText.text = "The Placement Gambit";
         dialogueText.text = "Follow me.";
-        
-        continuePrompt.SetActive(true); // Show "Press X"
+        continuePrompt.SetActive(true);
         choice1Button.gameObject.SetActive(false);
         choice2Button.gameObject.SetActive(false);
         choice3Button.gameObject.SetActive(false);
     }
 
-    // --- (The rest of the functions are mostly the same) ---
-
     public void ShowSingleLineDialogue(string speaker, string line)
     {
         if (currentState != DialogueState.Inactive) return; 
-
         bobMovement.enabled = false;
         dialoguePanel.SetActive(true);
         speakerNameText.text = speaker;
@@ -145,7 +169,6 @@ public class DialogueManager : MonoBehaviour
     public void StartManagerConversation()
     {
         if (currentState != DialogueState.Inactive) return; 
-
         currentState = DialogueState.ShowingManagerLine;
         bobMovement.enabled = false;
         dialoguePanel.SetActive(true);
@@ -155,7 +178,6 @@ public class DialogueManager : MonoBehaviour
         choice1Button.gameObject.SetActive(false);
         choice2Button.gameObject.SetActive(false);
         choice3Button.gameObject.SetActive(false); 
-        
         choice1Button.onClick.RemoveAllListeners();
         choice2Button.onClick.RemoveAllListeners();
         choice1Button.onClick.AddListener(OnChoice1Selected);
@@ -170,10 +192,8 @@ public class DialogueManager : MonoBehaviour
         choice1Button.gameObject.SetActive(true);
         choice2Button.gameObject.SetActive(true);
         choice3Button.gameObject.SetActive(false);
-
         choice1Button.GetComponentInChildren<TextMeshProUGUI>().text = "I am here to shop.";
         choice2Button.GetComponentInChildren<TextMeshProUGUI>().text = "I am here to sell a new product.";
-
         currentState = DialogueState.ShowingPlayerChoices;
     }
 
