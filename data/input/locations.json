@@ -1,122 +1,172 @@
 [
   {
     "location_id": "L001",
-    "shelf_id": "L001",
-    "name": "Location 1",
-    "zone": "Eye Level"
+    "zone_name": "End Cap 1 - Beverages",
+    "zone_type": "End Cap",
+    "primary_category": "Beverages",
+    "traffic_level": "high",
+    "traffic_index": 250,
+    "visibility_factor": 1.5,
+    "square_footage": 100,
+    "display_type": "display",
+    "x": 50,
+    "y": 80,
+    "width": 180,
+    "height": 100,
+    "base_placement_cost": 2000,
+    "notes": "End Cap in Beverages area - Front left of store"
   },
   {
     "location_id": "L002",
-    "shelf_id": "L002",
-    "name": "Location 2",
-    "zone": "Bottom Shelf"
+    "zone_name": "Main Entrance Display",
+    "zone_type": "Main Entrance",
+    "primary_category": "Snacks",
+    "traffic_level": "high",
+    "traffic_index": 250,
+    "visibility_factor": 1.3,
+    "square_footage": 69,
+    "display_type": "display",
+    "x": 750,
+    "y": 80,
+    "width": 180,
+    "height": 100,
+    "base_placement_cost": 1200,
+    "notes": "Main Entrance display - Front right of store"
   },
   {
     "location_id": "L003",
-    "shelf_id": "L003",
-    "name": "Location 3",
-    "zone": "Eye Level"
+    "zone_name": "Checkout Lane 1",
+    "zone_type": "Checkout",
+    "primary_category": "Snacks",
+    "traffic_level": "high",
+    "traffic_index": 250,
+    "visibility_factor": 1.6,
+    "square_footage": 90,
+    "display_type": "display",
+    "x": 400,
+    "y": 500,
+    "width": 200,
+    "height": 120,
+    "base_placement_cost": 1500,
+    "notes": "Checkout area - Bottom center of store"
   },
   {
     "location_id": "L004",
-    "shelf_id": "L004",
-    "name": "Location 4",
-    "zone": "End Cap"
+    "zone_name": "Beverage Aisle - Eye Level",
+    "zone_type": "Eye Level",
+    "primary_category": "Beverages",
+    "traffic_level": "medium",
+    "traffic_index": 180,
+    "visibility_factor": 1.2,
+    "square_footage": 54,
+    "display_type": "display",
+    "x": 50,
+    "y": 250,
+    "width": 180,
+    "height": 120,
+    "base_placement_cost": 1000,
+    "notes": "Eye Level in Beverages area - Left side middle"
   },
   {
     "location_id": "L005",
-    "shelf_id": "L005",
-    "name": "Location 5",
-    "zone": "Regular Shelf"
+    "zone_name": "Snack Aisle - Eye Level",
+    "zone_type": "Eye Level",
+    "primary_category": "Snacks",
+    "traffic_level": "medium",
+    "traffic_index": 180,
+    "visibility_factor": 1.2,
+    "square_footage": 75,
+    "display_type": "display",
+    "x": 280,
+    "y": 250,
+    "width": 180,
+    "height": 120,
+    "base_placement_cost": 1000,
+    "notes": "Eye Level in Snacks area - Center left"
   },
   {
     "location_id": "L006",
-    "shelf_id": "L006",
-    "name": "Location 6",
-    "zone": "Regular Shelf"
+    "zone_name": "Dairy Section - Regular",
+    "zone_type": "Regular Shelf",
+    "primary_category": "Dairy",
+    "traffic_level": "medium",
+    "traffic_index": 180,
+    "visibility_factor": 1.0,
+    "square_footage": 84,
+    "display_type": "shelf",
+    "x": 510,
+    "y": 250,
+    "width": 180,
+    "height": 120,
+    "base_placement_cost": 500,
+    "notes": "Regular Shelf in Dairy area - Center right"
   },
   {
     "location_id": "L007",
-    "shelf_id": "L007",
-    "name": "Location 7",
-    "zone": "Checkout"
+    "zone_name": "Bakery Display",
+    "zone_type": "Regular Shelf",
+    "primary_category": "Bakery",
+    "traffic_level": "medium",
+    "traffic_index": 180,
+    "visibility_factor": 1.0,
+    "square_footage": 100,
+    "display_type": "shelf",
+    "x": 740,
+    "y": 250,
+    "width": 180,
+    "height": 120,
+    "base_placement_cost": 500,
+    "notes": "Regular Shelf in Bakery area - Right side middle"
   },
   {
     "location_id": "L008",
-    "shelf_id": "L008",
-    "name": "Location 8",
-    "zone": "Eye Level"
+    "zone_name": "End Cap 2 - Snacks",
+    "zone_type": "End Cap",
+    "primary_category": "Snacks",
+    "traffic_level": "high",
+    "traffic_index": 250,
+    "visibility_factor": 1.5,
+    "square_footage": 39,
+    "display_type": "display",
+    "x": 280,
+    "y": 80,
+    "width": 180,
+    "height": 100,
+    "base_placement_cost": 2000,
+    "notes": "End Cap in Snacks area - Front center"
   },
   {
     "location_id": "L009",
-    "shelf_id": "L009",
-    "name": "Location 9",
-    "zone": "Checkout"
+    "zone_name": "Personal Care Aisle",
+    "zone_type": "Regular Shelf",
+    "primary_category": "Personal Care",
+    "traffic_level": "low",
+    "traffic_index": 120,
+    "visibility_factor": 1.0,
+    "square_footage": 20,
+    "display_type": "shelf",
+    "x": 510,
+    "y": 80,
+    "width": 180,
+    "height": 100,
+    "base_placement_cost": 500,
+    "notes": "Regular Shelf in Personal Care area - Front center-right"
   },
   {
     "location_id": "L010",
-    "shelf_id": "L010",
-    "name": "Location 10",
-    "zone": "Eye Level"
-  },
-  {
-    "location_id": "L011",
-    "shelf_id": "L011",
-    "name": "Location 11",
-    "zone": "End Cap"
-  },
-  {
-    "location_id": "L012",
-    "shelf_id": "L012",
-    "name": "Location 12",
-    "zone": "Checkout"
-  },
-  {
-    "location_id": "L013",
-    "shelf_id": "L013",
-    "name": "Location 13",
-    "zone": "Top Shelf"
-  },
-  {
-    "location_id": "L014",
-    "shelf_id": "L014",
-    "name": "Location 14",
-    "zone": "End Cap"
-  },
-  {
-    "location_id": "L015",
-    "shelf_id": "L015",
-    "name": "Location 15",
-    "zone": "Checkout"
-  },
-  {
-    "location_id": "L016",
-    "shelf_id": "L016",
-    "name": "Location 16",
-    "zone": "Top Shelf"
-  },
-  {
-    "location_id": "L017",
-    "shelf_id": "L017",
-    "name": "Location 17",
-    "zone": "Checkout"
-  },
-  {
-    "location_id": "L018",
-    "shelf_id": "L018",
-    "name": "Location 18",
-    "zone": "Bottom Shelf"
-  },
-  {
-    "location_id": "L019",
-    "shelf_id": "L019",
-    "name": "Location 19",
-    "zone": "Regular Shelf"
-  },
-  {
-    "location_id": "L020",
-    "shelf_id": "L020",
-    "name": "Location 20",
-    "zone": "Regular Shelf"
+    "zone_name": "Beverage Aisle - Bottom",
+    "zone_type": "Bottom Shelf",
+    "primary_category": "Beverages",
+    "traffic_level": "medium",
+    "traffic_index": 180,
+    "visibility_factor": 0.8,
+    "square_footage": 34,
+    "display_type": "shelf",
+    "x": 50,
+    "y": 420,
+    "width": 180,
+    "height": 80,
+    "base_placement_cost": 400,
+    "notes": "Bottom Shelf in Beverages area - Left side bottom"
   }
 ]

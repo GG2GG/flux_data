@@ -8,12 +8,34 @@ version: "1.0"
 # ============================================================================
 # Based on retail industry research and typical placement contracts
 zone_defaults:
-  endcap: 2000          # End-cap displays - premium visibility
-  checkout: 1500        # Checkout lanes - impulse buying zone
-  eye_level: 1000       # Eye-level shelving - optimal visibility
-  regular_shelf: 800    # Regular shelf space - standard pricing
-  low_shelf: 500        # Bottom shelf - economy pricing
-  top_shelf: 600        # Top shelf - lower visibility
+  # End cap displays
+  "End Cap": 2000
+  endcap: 2000
+
+  # Checkout area
+  "Checkout": 1500
+  checkout: 1500
+
+  # Eye level shelving
+  "Eye Level": 1000
+  eye_level: 1000
+
+  # Regular/standard shelving
+  "Regular Shelf": 800
+  regular_shelf: 800
+
+  # Low/bottom shelving
+  "Bottom Shelf": 500
+  bottom_shelf: 500
+  low_shelf: 500
+
+  # Top shelving
+  "Top Shelf": 600
+  top_shelf: 600
+
+  # Main entrance
+  "Main Entrance": 1200
+  main_entrance: 1200
 
 # ============================================================================
 # PLACEMENT SETTINGS
