@@ -1,31 +1,25 @@
-# Core API Framework
-fastapi>=0.121.2
-uvicorn>=0.38.0
-pydantic>=2.12.4
-python-dotenv>=1.0.0  # Load .env configuration files
+# Python Requirements for The Placement Gambit
+# Install with: pip install -r requirements.txt
 
-# LLM Integration
-openai>=1.0.0  # OpenAI and OpenRouter
-google-generativeai>=0.3.0  # Google Gemini API
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Data Validation
+pydantic==2.5.0
+
+# AI Integration
+google-generativeai==0.3.1
+
+# Environment Variables
+python-dotenv==1.0.0
 
 # Data Processing
-numpy>=1.24.0
+pandas==2.1.3
+numpy==1.24.3
 
-# Knowledge Graph
-networkx>=3.0  # For building and querying knowledge graphs
+# HTTP Requests (for testing)
+requests==2.31.0
 
-# Optional: For enhanced CLI (coming soon)
-# rich>=13.0.0
-# click>=8.0.0
-
-# Optional: For production deployment
-# gunicorn>=21.0.0
-# python-dotenv>=1.0.0
-# redis>=5.0.0
-
-# Optional: For real ML models (Phase 2)
-# xgboost>=2.0.0
-# scikit-learn>=1.3.0
-# shap>=0.44.0
-# mlxtend>=0.23.0
-# pandas>=2.0.0
+# CORS Support
+python-multipart==0.0.6

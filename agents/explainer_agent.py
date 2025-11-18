@@ -362,59 +362,61 @@ class ExplainerAgent(BaseAgent):
 
     def answer_followup_question(self, state: PlacementState, question: str) -> str:
         """
-        Answer follow-up questions about the recommendations.
+        Answer follow-up questions about the recommendations using real-time AI.
 
-        This is a simple pattern-matching approach. In production, would use NLP.
+        Prioritizes LLM (Gemini) for natural, contextual responses.
+        Falls back to template responses only if LLM is unavailable or fails.
         """
         question_lower = question.lower()
 
-        # Pattern matching for common questions
+        # PRIORITY 1: Use LLM for natural, contextual responses if available
+        if self.llm_client and self.llm_client.enabled:
+            try:
+                product_dict = {
+                    'name': state.product.product_name,
+                    'category': state.product.category,
+                    'price': state.product.price,
+                    'budget': state.product.budget
+                }
+                context = {
+                    'explanation': state.explanation.model_dump() if state.explanation else {},
+                    'locations_count': len(state.locations) if state.locations else 0
+                }
+
+                # Call Gemini for real-time answer
+                llm_response = self.llm_client.answer_followup_question(
+                    question=question,
+                    product=product_dict,
+                    recommendations=state.final_recommendations,
+                    context=context
+                )
+
+                # If we got a valid response, return it
+                if llm_response and len(llm_response.strip()) > 0:
+                    return llm_response
+
+            except Exception as e:
+                self.logger.warning(f"LLM question answering failed: {e}. Falling back to template response.")
+
+        # FALLBACK: Pattern matching for common questions (only if LLM fails or disabled)
+        top_location = list(state.final_recommendations.keys())[0] if state.final_recommendations else None
+
+        if not top_location:
+            return "I need recommendation data to answer questions. Please run an analysis first."
+
         if "why" in question_lower:
-            # Re-generate feature importance
-            top_location = list(state.final_recommendations.keys())[0]
             return self._generate_feature_importance(state, top_location)
-
         elif "competitor" in question_lower or "vs" in question_lower or "compare" in question_lower:
-            top_location = list(state.final_recommendations.keys())[0]
             return self._generate_competitor_benchmark(state, top_location)
-
         elif "alternative" in question_lower or "instead" in question_lower or "what if" in question_lower:
-            top_location = list(state.final_recommendations.keys())[0]
             return self._generate_counterfactual(state, top_location)
-
         elif "confidence" in question_lower or "sure" in question_lower or "certain" in question_lower:
-            top_location = list(state.final_recommendations.keys())[0]
             return self._generate_confidence_assessment(state, top_location)
-
         elif "historical" in question_lower or "past" in question_lower or "similar" in question_lower:
-            top_location = list(state.final_recommendations.keys())[0]
             return self._generate_historical_evidence(state, top_location)
-
         else:
-            # Use LLM for custom questions if available
-            if self.llm_client and self.llm_client.enabled:
-                try:
-                    product_dict = {
-                        'name': state.product.product_name,
-                        'category': state.product.category,
-                        'price': state.product.price,
-                        'budget': state.product.budget
-                    }
-                    context = {
-                        'explanation': state.explanation.model_dump() if state.explanation else {},
-                        'locations_count': len(state.locations) if state.locations else 0
-                    }
-                    return self.llm_client.answer_followup_question(
-                        question=question,
-                        product=product_dict,
-                        recommendations=state.final_recommendations,
-                        context=context
-                    )
-                except Exception as e:
-                    self.logger.warning(f"LLM question answering failed: {e}")
-
-            # Default: provide summary
-            return state.explanation.feature_importance if state.explanation else "I can explain the recommendation based on feature importance, historical evidence, competitor benchmarks, or alternative scenarios. Please ask a more specific question."
+            # Generic fallback
+            return "I can explain the recommendation based on feature importance, historical evidence, competitor benchmarks, or alternative scenarios. Please ask a more specific question."
 
     def _generate_llm_explanation(self, state: PlacementState, location: str, roi: float) -> Explanation:
         """

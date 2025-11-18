@@ -704,7 +704,7 @@ ANSWER IN ONE SENTENCE with fresh insight (Start with an action verb like "Place
         # Create a minimal state object for answer_followup
         from models.schemas import PlacementState
         state = PlacementState(
-            product_input=product_input,
+            product=product_input,  # Fixed: should be 'product' not 'product_input'
             session_id=session_id
         )
         state.final_recommendations = recommendations
