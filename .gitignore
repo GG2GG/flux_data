@@ -294,3 +294,4 @@ __marimo__/
 .streamlit/secrets.toml
 *.bak
 *.bak/*
+./artifacts/state_transitions/*
