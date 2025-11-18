@@ -522,27 +522,10 @@
         }
 
         /* Shelf Unit Container */
-        .shelf-unit-container {
-            position: relative;
-            width: 100%;
-            max-width: 100%;
-            height: 600px;
-            background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
-            border-radius: 12px;
-            padding: 30px 20px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
+        
 
         /* Vertical support posts */
-        .shelf-post {
-            position: absolute;
-            width: 25px;
-            height: 100%;
-            background: linear-gradient(90deg, #64748b 0%, #475569 50%, #64748b 100%);
-            box-shadow: inset 2px 0 5px rgba(0,0,0,0.2), inset -2px 0 5px rgba(0,0,0,0.2);
-            border-radius: 4px;
-        }
+        
 
         .shelf-post.left {
             left: 40px;
@@ -553,25 +536,7 @@
         }
 
         /* Individual shelf plank */
-        .shelf-plank {
-            position: absolute;
-            left: 35px;
-            right: 35px;
-            height: 80px;
-            background: linear-gradient(180deg, #8b7355 0%, #6b5a45 50%, #5a4a38 100%);
-            border: 3px solid #4a3a28;
-            border-radius: 8px;
-            box-shadow:
-                0 8px 15px rgba(0,0,0,0.3),
-                inset 0 2px 3px rgba(255,255,255,0.2),
-                inset 0 -2px 3px rgba(0,0,0,0.3);
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            overflow: visible;
-        }
+        
 
         .shelf-plank::before {
             content: '';
@@ -734,21 +699,6 @@
         }
 
         /* Visual indicator on shelf plank */
-        .shelf-plank {
-            position: relative;
-        }
-
-        .shelf-plank::after {
-            content: '👆 Click for details';
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.6);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
 
         .shelf-plank:hover::after {
             opacity: 1;
@@ -893,21 +843,11 @@
                 border-radius: 0;
             }
 
-            .shelf-unit-container {
-                height: 500px;
-                padding: 20px 10px;
-            }
+            
 
-            .shelf-plank {
-                left: 20px;
-                right: 20px;
-                height: 70px;
-                padding: 0 10px;
-            }
+            
 
-            .shelf-post {
-                width: 20px;
-            }
+            
 
             .shelf-post.left {
                 left: 25px;
@@ -964,6 +904,438 @@
                 font-size: 8px;
             }
         }
+    
+        /* ===== IMPROVED SHELF UNIT STYLING ===== */
+
+        .shelf-rows-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .shelf-unit-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            height: 650px;
+            background: linear-gradient(180deg, #f8fafc 0%, #e8f0f7 100%);
+            border-radius: 16px;
+            padding: 40px 30px;
+            margin: 30px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        /* Vertical support posts */
+        .shelf-post {
+            position: absolute;
+            width: 32px;
+            height: 100%;
+            background: linear-gradient(90deg, #475569 0%, #64748b 50%, #475569 100%);
+            box-shadow: inset 2px 0 8px rgba(0, 0, 0, 0.3), inset -2px 0 8px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 6px;
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+        }
+
+        .shelf-post.left {
+            left: 30px;
+            box-shadow: inset 2px 0 8px rgba(0, 0, 0, 0.3), inset -2px 0 8px rgba(0, 0, 0, 0.2), 4px 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .shelf-post.right {
+            right: 30px;
+            box-shadow: inset 2px 0 8px rgba(0, 0, 0, 0.3), inset -2px 0 8px rgba(0, 0, 0, 0.2), -4px 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Individual shelf plank */
+        .shelf-plank {
+            position: absolute;
+            left: 35px;
+            right: 35px;
+            height: 100px;
+            background: linear-gradient(180deg, #a89070 0%, #8b7355 25%, #6b5a45 50%, #5a4a38 100%);
+            border: 3px solid #4a3a28;
+            border-radius: 10px;
+            box-shadow: 
+                0 12px 24px rgba(0, 0, 0, 0.25),
+                inset 0 2px 4px rgba(255, 255, 255, 0.15),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.4),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            overflow: visible;
+        }
+
+        .shelf-plank::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: -8px;
+            height: 8px;
+            background: linear-gradient(180deg, #b8a090 0%, #a89070 100%);
+            border-radius: 10px 10px 0 0;
+            box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .shelf-plank:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.35),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.4),
+                0 0 25px rgba(102, 126, 234, 0.4);
+            border-color: #5a4a38;
+        }
+
+        /* Shelf plank color variations */
+        .shelf-plank.high-roi {
+            background: linear-gradient(180deg, #86efac 0%, #22c55e 25%, #16a34a 50%, #15803d 100%);
+            border-color: #166534;
+            box-shadow: 
+                0 12px 24px rgba(34, 197, 94, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .shelf-plank.high-roi:hover {
+            box-shadow: 
+                0 20px 40px rgba(34, 197, 94, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                0 0 30px rgba(34, 197, 94, 0.6);
+        }
+
+        .shelf-plank.medium-roi {
+            background: linear-gradient(180deg, #93c5fd 0%, #3b82f6 25%, #2563eb 50%, #1d4ed8 100%);
+            border-color: #1e40af;
+            box-shadow: 
+                0 12px 24px rgba(59, 130, 246, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .shelf-plank.medium-roi:hover {
+            box-shadow: 
+                0 20px 40px rgba(59, 130, 246, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                0 0 30px rgba(59, 130, 246, 0.6);
+        }
+
+        .shelf-plank.low-roi {
+            background: linear-gradient(180deg, #fde047 0%, #eab308 25%, #ca8a04 50%, #b45309 100%);
+            border-color: #92400e;
+            box-shadow: 
+                0 12px 24px rgba(234, 179, 8, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .shelf-plank.low-roi:hover {
+            box-shadow: 
+                0 20px 40px rgba(234, 179, 8, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                0 0 30px rgba(234, 179, 8, 0.6);
+        }
+
+        /* Shelf content layout */
+        .shelf-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            z-index: 1;
+            position: relative;
+            gap: 20px;
+        }
+
+        /* Shelf label */
+        .shelf-label {
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+            flex: 0 0 auto;
+            letter-spacing: 0.5px;
+        }
+
+        /* ROI Display */
+        .shelf-roi-display {
+            font-size: 36px;
+            font-weight: 900;
+            color: white;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.6);
+            margin: 0 25px;
+            min-width: 120px;
+            text-align: center;
+            letter-spacing: -1px;
+        }
+
+        /* Metrics section */
+        .shelf-metrics {
+            display: flex;
+            gap: 25px;
+            font-size: 12px;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            margin-left: auto;
+            flex: 0 0 auto;
+        }
+
+        .shelf-metric {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .shelf-metric-value {
+            font-weight: 800;
+            font-size: 16px;
+            display: block;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .shelf-metric-label {
+            font-size: 11px;
+            font-weight: 700;
+            opacity: 0.95;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Selected shelf state */
+        .shelf-plank.selected {
+            border-width: 4px;
+            box-shadow: 
+                0 0 40px rgba(102, 126, 234, 0.8),
+                0 20px 40px rgba(0, 0, 0, 0.35),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.4);
+            transform: translateY(-6px) scale(1.03);
+        }
+
+        .shelf-plank.selected::after {
+            content: 'Selected';
+            opacity: 1;
+            color: white;
+            font-weight: 800;
+        }
+
+        /* Click hint indicator */
+
+        .shelf-plank:hover::after {
+            opacity: 1;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Shelf Details Container */
+        .shelf-details-container {
+            width: 100%;
+            margin-top: 30px;
+            min-height: 200px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 25px;
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .shelf-details-container:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .shelf-details-placeholder {
+            text-align: center;
+            padding: 50px 20px;
+            color: #94a3b8;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        /* Details content */
+        .shelf-details-content {
+            display: none;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .shelf-details-content.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .shelf-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 18px;
+            border-bottom: 3px solid #667eea;
+            gap: 20px;
+        }
+
+        .shelf-detail-title {
+            font-size: 1.4em;
+            font-weight: 800;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+        }
+
+        .shelf-detail-roi-badge {
+            font-size: 1.8em;
+            font-weight: 900;
+            padding: 10px 24px;
+            border-radius: 12px;
+            color: white;
+            flex: 0 0 auto;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            letter-spacing: -1px;
+        }
+
+        .shelf-detail-roi-badge.high {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        }
+
+        .shelf-detail-roi-badge.medium {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .shelf-detail-roi-badge.low {
+            background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+        }
+
+        /* Detail grid */
+        .shelf-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        /* Info sections */
+        .info-section {
+            margin-bottom: 12px;
+            padding: 14px 16px;
+            background: rgba(102, 126, 234, 0.08);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            font-size: 13px;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .info-section:hover {
+            background: rgba(102, 126, 234, 0.12);
+            border-left-color: #667eea;
+            transform: translateX(3px);
+        }
+
+        .info-section strong {
+            color: #667eea;
+            font-weight: 800;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .info-section.impact {
+            background: rgba(34, 197, 94, 0.08);
+            border-left-color: #22c55e;
+        }
+
+        .info-section.impact strong {
+            color: #22c55e;
+        }
+
+        .info-section.behavior {
+            background: rgba(59, 130, 246, 0.08);
+            border-left-color: #3b82f6;
+        }
+
+        .info-section.behavior strong {
+            color: #3b82f6;
+        }
+
+        .info-section.bestfor {
+            background: rgba(234, 179, 8, 0.08);
+            border-left-color: #eab308;
+        }
+
+        .info-section.bestfor strong {
+            color: #ca8a04;
+        }
+
+        /* Research citation */
+        .research-citation {
+            font-size: 11px;
+            color: #64748b;
+            font-style: italic;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid #e2e8f0;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .shelf-unit-container {
+                height: 500px;
+                padding: 25px 15px;
+            }
+
+            .shelf-plank {
+                left: 20px;
+                right: 20px;
+                height: 80px;
+                padding: 0 12px;
+            }
+
+            .shelf-label {
+                font-size: 14px;
+            }
+
+            .shelf-roi-display {
+                font-size: 28px;
+                margin: 0 12px;
+                min-width: 90px;
+            }
+
+            .shelf-metrics {
+                gap: 15px;
+                font-size: 10px;
+            }
+
+            .shelf-metric-value {
+                font-size: 14px;
+            }
+
+            .shelf-details-container {
+                padding: 15px;
+                margin-top: 20px;
+            }
+
+            .shelf-detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* ===== END OF SHELF UNIT IMPROVEMENTS ===== */
+
     </style>
 </head>
 <body>
@@ -979,12 +1351,12 @@
                 <h2>📦 Product Details</h2>
                 <form id="productForm">
                     <div class="form-group">
-                        <label for="productName">Product Name</label>
+                        <label for="productName">🏷️ Product Name</label>
                         <input type="text" id="productName" value="Premium Energy Drink" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="category">Category</label>
+                        <label for="category">📁 Category</label>
                         <select id="category" required>
                             <option value="Beverages" selected>Beverages</option>
                             <option value="Snacks">Snacks</option>
@@ -995,27 +1367,27 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="price">Price ($)</label>
+                        <label for="price">💵 Price ($)</label>
                         <input type="number" id="price" value="2.99" step="0.01" min="0" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="budget">Budget ($)</label>
+                        <label for="budget">💰 Budget ($)</label>
                         <input type="number" id="budget" value="5000" step="100" min="0" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="targetSales">Target Sales (units)</label>
+                        <label for="targetSales">🎯 Target Sales (units)</label>
                         <input type="number" id="targetSales" value="1000" step="10" min="0" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="targetCustomers">Target Customers</label>
+                        <label for="targetCustomers">🚀 Target Customers</label>
                         <input type="text" id="targetCustomers" value="Young adults 18-35" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="expectedROI">Expected ROI</label>
+                        <label for="expectedROI">📈 Expected ROI</label>
                         <input type="number" id="expectedROI" value="1.5" step="0.1" min="0" required>
                     </div>
 
