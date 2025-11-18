@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class GambitAgent : MonoBehaviour
 {
@@ -15,18 +16,39 @@ public class GambitAgent : MonoBehaviour
     public string row2Dialogue = "This is the Health & Beauty section. A bit lower traffic, but the profit margins per unit are excellent.";
     public string row3Dialogue = "This is General Merchandise. It's a high-velocity aisle, perfect for impulse buys and seasonal items.";
 
+    [Header("State")]
+    public bool hasIntroducedHimself = false;
+
     // --- Private State ---
     private Transform playerTarget;
     private Transform currentRowTarget;
     private DialogueManager dialogueManager;
+    private PlayerControls playerControls; 
+
+    private bool playerIsNearby = false;
     
-    // <-- NEW STATE ADDED
-    private enum AgentState { Idle, ApproachingPlayer, AwaitingPlayerChoice, MovingToRow, WaitingAtRow }
+    private enum AgentState { Idle, ApproachingPlayer, MovingToRow, WaitingAtRow }
     private AgentState currentState = AgentState.Idle;
+
+    void Awake()
+    {
+        playerControls = new PlayerControls();
+        playerControls.Player.Interact.performed += OnInteract;
+    }
 
     void Start()
     {
         dialogueManager = FindObjectOfType<DialogueManager>();
+    }
+
+    private void OnEnable()
+    {
+        playerControls.Player.Interact.Enable();
+    }
+
+    private void OnDisable()
+    {
+        playerControls.Player.Interact.Disable();
     }
 
     void Update()
@@ -35,12 +57,10 @@ public class GambitAgent : MonoBehaviour
         {
             MoveToTarget(playerTarget.position);
             
-            // Check if we've arrived at the player
             if (Vector2.Distance(transform.position, playerTarget.position) < 1.5f)
             {
-                // <-- UPDATED: Tell manager to start the INTRO, not the choices
                 dialogueManager.ShowGambitIntro(); 
-                currentState = AgentState.AwaitingPlayerChoice; // <-- NEW: Wait for a choice
+                currentState = AgentState.Idle; 
             }
         }
         else if (currentState == AgentState.MovingToRow)
@@ -49,7 +69,7 @@ public class GambitAgent : MonoBehaviour
 
             if (Vector2.Distance(transform.position, currentRowTarget.position) < 0.1f)
             {
-                currentState = AgentState.WaitingAtRow;
+                currentState = AgentState.WaitingAtRow; 
             }
         }
     }
@@ -66,7 +86,6 @@ public class GambitAgent : MonoBehaviour
         this.currentState = AgentState.ApproachingPlayer;
     }
 
-    // This function is the same, it just gets called later now
     public void GoToRow(int rowNum)
     {
         currentState = AgentState.MovingToRow;
@@ -75,17 +94,58 @@ public class GambitAgent : MonoBehaviour
         if (rowNum == 3) currentRowTarget = row3Target;
     }
 
+    // --- THIS IS THE UPDATED FUNCTION ---
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player") && currentState == AgentState.WaitingAtRow)
+        if (other.CompareTag("Player"))
         {
-            string lineToSay = "";
-            if (currentRowTarget == row1Target) lineToSay = row1Dialogue;
-            if (currentRowTarget == row2Target) lineToSay = row2Dialogue;
-            if (currentRowTarget == row3Target) lineToSay = row3Dialogue;
+            playerIsNearby = true; 
+            
+            if (currentState == AgentState.WaitingAtRow)
+            {
+                string lineToSay = "";
+                int rowNum = 0; // <-- Need to store the row number
 
-            dialogueManager.ShowSingleLineDialogue("The Placement Gambit", lineToSay);
-            currentState = AgentState.Idle;
+                if (currentRowTarget == row1Target) 
+                {
+                    lineToSay = row1Dialogue;
+                    rowNum = 1;
+                }
+                if (currentRowTarget == row2Target)
+                {
+                    lineToSay = row2Dialogue;
+                    rowNum = 2;
+                }
+                if (currentRowTarget == row3Target)
+                {
+                    lineToSay = row3Dialogue;
+                    rowNum = 3;
+                }
+
+                // --- THIS IS THE FIX ---
+                // We are now calling the new function that knows about the dashboard
+                dialogueManager.ShowGambitFinalLine(lineToSay, rowNum);
+                // ---------------------
+
+                currentState = AgentState.Idle;
+            }
+        }
+    }
+    // ------------------------------------
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            playerIsNearby = false; 
+        }
+    }
+
+    private void OnInteract(InputAction.CallbackContext context)
+    {
+        if (playerIsNearby && currentState == AgentState.Idle && hasIntroducedHimself)
+        {
+            dialogueManager.StartGambitReconvo(); 
         }
     }
 }
