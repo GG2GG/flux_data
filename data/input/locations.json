@@ -1,0 +1,122 @@
+[
+  {
+    "location_id": "L001",
+    "shelf_id": "L001",
+    "name": "Location 1",
+    "zone": "Eye Level"
+  },
+  {
+    "location_id": "L002",
+    "shelf_id": "L002",
+    "name": "Location 2",
+    "zone": "Bottom Shelf"
+  },
+  {
+    "location_id": "L003",
+    "shelf_id": "L003",
+    "name": "Location 3",
+    "zone": "Eye Level"
+  },
+  {
+    "location_id": "L004",
+    "shelf_id": "L004",
+    "name": "Location 4",
+    "zone": "End Cap"
+  },
+  {
+    "location_id": "L005",
+    "shelf_id": "L005",
+    "name": "Location 5",
+    "zone": "Regular Shelf"
+  },
+  {
+    "location_id": "L006",
+    "shelf_id": "L006",
+    "name": "Location 6",
+    "zone": "Regular Shelf"
+  },
+  {
+    "location_id": "L007",
+    "shelf_id": "L007",
+    "name": "Location 7",
+    "zone": "Checkout"
+  },
+  {
+    "location_id": "L008",
+    "shelf_id": "L008",
+    "name": "Location 8",
+    "zone": "Eye Level"
+  },
+  {
+    "location_id": "L009",
+    "shelf_id": "L009",
+    "name": "Location 9",
+    "zone": "Checkout"
+  },
+  {
+    "location_id": "L010",
+    "shelf_id": "L010",
+    "name": "Location 10",
+    "zone": "Eye Level"
+  },
+  {
+    "location_id": "L011",
+    "shelf_id": "L011",
+    "name": "Location 11",
+    "zone": "End Cap"
+  },
+  {
+    "location_id": "L012",
+    "shelf_id": "L012",
+    "name": "Location 12",
+    "zone": "Checkout"
+  },
+  {
+    "location_id": "L013",
+    "shelf_id": "L013",
+    "name": "Location 13",
+    "zone": "Top Shelf"
+  },
+  {
+    "location_id": "L014",
+    "shelf_id": "L014",
+    "name": "Location 14",
+    "zone": "End Cap"
+  },
+  {
+    "location_id": "L015",
+    "shelf_id": "L015",
+    "name": "Location 15",
+    "zone": "Checkout"
+  },
+  {
+    "location_id": "L016",
+    "shelf_id": "L016",
+    "name": "Location 16",
+    "zone": "Top Shelf"
+  },
+  {
+    "location_id": "L017",
+    "shelf_id": "L017",
+    "name": "Location 17",
+    "zone": "Checkout"
+  },
+  {
+    "location_id": "L018",
+    "shelf_id": "L018",
+    "name": "Location 18",
+    "zone": "Bottom Shelf"
+  },
+  {
+    "location_id": "L019",
+    "shelf_id": "L019",
+    "name": "Location 19",
+    "zone": "Regular Shelf"
+  },
+  {
+    "location_id": "L020",
+    "shelf_id": "L020",
+    "name": "Location 20",
+    "zone": "Regular Shelf"
+  }
+]

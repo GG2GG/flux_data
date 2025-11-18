@@ -1,0 +1,482 @@
+[
+  {
+    "product_id": "P001",
+    "name": "Beverages Product 1",
+    "category": "Beverages",
+    "price": 7.05,
+    "brand": "Brand 19",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P002",
+    "name": "Beverages Product 2",
+    "category": "Beverages",
+    "price": 2.32,
+    "brand": "Brand 1",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P003",
+    "name": "Beverages Product 3",
+    "category": "Beverages",
+    "price": 12.85,
+    "brand": "Brand 1",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P004",
+    "name": "Beverages Product 4",
+    "category": "Beverages",
+    "price": 18.44,
+    "brand": "Brand 13",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P005",
+    "name": "Beverages Product 5",
+    "category": "Beverages",
+    "price": 5.19,
+    "brand": "Brand 16",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P006",
+    "name": "Beverages Product 6",
+    "category": "Beverages",
+    "price": 2.13,
+    "brand": "Brand 10",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P007",
+    "name": "Beverages Product 7",
+    "category": "Beverages",
+    "price": 10.86,
+    "brand": "Brand 11",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P008",
+    "name": "Beverages Product 8",
+    "category": "Beverages",
+    "price": 18.07,
+    "brand": "Brand 20",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P009",
+    "name": "Beverages Product 9",
+    "category": "Beverages",
+    "price": 11.42,
+    "brand": "Brand 17",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P010",
+    "name": "Beverages Product 10",
+    "category": "Beverages",
+    "price": 13.09,
+    "brand": "Brand 8",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P011",
+    "name": "Beverages Product 11",
+    "category": "Beverages",
+    "price": 5.03,
+    "brand": "Brand 18",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P012",
+    "name": "Beverages Product 12",
+    "category": "Beverages",
+    "price": 4.11,
+    "brand": "Brand 6",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P013",
+    "name": "Snacks Product 1",
+    "category": "Snacks",
+    "price": 4.75,
+    "brand": "Brand 6",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P014",
+    "name": "Snacks Product 2",
+    "category": "Snacks",
+    "price": 4.43,
+    "brand": "Brand 6",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P015",
+    "name": "Snacks Product 3",
+    "category": "Snacks",
+    "price": 19.35,
+    "brand": "Brand 9",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P016",
+    "name": "Snacks Product 4",
+    "category": "Snacks",
+    "price": 2.67,
+    "brand": "Brand 19",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P017",
+    "name": "Snacks Product 5",
+    "category": "Snacks",
+    "price": 14.07,
+    "brand": "Brand 8",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P018",
+    "name": "Snacks Product 6",
+    "category": "Snacks",
+    "price": 11.91,
+    "brand": "Brand 16",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P019",
+    "name": "Snacks Product 7",
+    "category": "Snacks",
+    "price": 15.88,
+    "brand": "Brand 10",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P020",
+    "name": "Snacks Product 8",
+    "category": "Snacks",
+    "price": 6.23,
+    "brand": "Brand 17",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P021",
+    "name": "Snacks Product 9",
+    "category": "Snacks",
+    "price": 11.67,
+    "brand": "Brand 12",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P022",
+    "name": "Snacks Product 10",
+    "category": "Snacks",
+    "price": 12.8,
+    "brand": "Brand 18",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P023",
+    "name": "Snacks Product 11",
+    "category": "Snacks",
+    "price": 2.94,
+    "brand": "Brand 19",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P024",
+    "name": "Snacks Product 12",
+    "category": "Snacks",
+    "price": 5.13,
+    "brand": "Brand 14",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P025",
+    "name": "Dairy Product 1",
+    "category": "Dairy",
+    "price": 5.9,
+    "brand": "Brand 20",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P026",
+    "name": "Dairy Product 2",
+    "category": "Dairy",
+    "price": 17.05,
+    "brand": "Brand 16",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P027",
+    "name": "Dairy Product 3",
+    "category": "Dairy",
+    "price": 17.16,
+    "brand": "Brand 12",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P028",
+    "name": "Dairy Product 4",
+    "category": "Dairy",
+    "price": 13.67,
+    "brand": "Brand 11",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P029",
+    "name": "Dairy Product 5",
+    "category": "Dairy",
+    "price": 11.79,
+    "brand": "Brand 16",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P030",
+    "name": "Dairy Product 6",
+    "category": "Dairy",
+    "price": 8.5,
+    "brand": "Brand 16",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P031",
+    "name": "Dairy Product 7",
+    "category": "Dairy",
+    "price": 15.46,
+    "brand": "Brand 20",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P032",
+    "name": "Dairy Product 8",
+    "category": "Dairy",
+    "price": 12.46,
+    "brand": "Brand 7",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P033",
+    "name": "Dairy Product 9",
+    "category": "Dairy",
+    "price": 4.08,
+    "brand": "Brand 4",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P034",
+    "name": "Dairy Product 10",
+    "category": "Dairy",
+    "price": 13.34,
+    "brand": "Brand 8",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P035",
+    "name": "Dairy Product 11",
+    "category": "Dairy",
+    "price": 15.79,
+    "brand": "Brand 17",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P036",
+    "name": "Dairy Product 12",
+    "category": "Dairy",
+    "price": 2.04,
+    "brand": "Brand 7",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P037",
+    "name": "Bakery Product 1",
+    "category": "Bakery",
+    "price": 6.26,
+    "brand": "Brand 14",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P038",
+    "name": "Bakery Product 2",
+    "category": "Bakery",
+    "price": 12.45,
+    "brand": "Brand 1",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P039",
+    "name": "Bakery Product 3",
+    "category": "Bakery",
+    "price": 4.08,
+    "brand": "Brand 10",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P040",
+    "name": "Bakery Product 4",
+    "category": "Bakery",
+    "price": 9.3,
+    "brand": "Brand 20",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P041",
+    "name": "Bakery Product 5",
+    "category": "Bakery",
+    "price": 14.19,
+    "brand": "Brand 11",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P042",
+    "name": "Bakery Product 6",
+    "category": "Bakery",
+    "price": 5.34,
+    "brand": "Brand 6",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P043",
+    "name": "Bakery Product 7",
+    "category": "Bakery",
+    "price": 19.75,
+    "brand": "Brand 2",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P044",
+    "name": "Bakery Product 8",
+    "category": "Bakery",
+    "price": 14.36,
+    "brand": "Brand 3",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P045",
+    "name": "Bakery Product 9",
+    "category": "Bakery",
+    "price": 19.81,
+    "brand": "Brand 9",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P046",
+    "name": "Bakery Product 10",
+    "category": "Bakery",
+    "price": 4.35,
+    "brand": "Brand 13",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P047",
+    "name": "Bakery Product 11",
+    "category": "Bakery",
+    "price": 17.08,
+    "brand": "Brand 8",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P048",
+    "name": "Bakery Product 12",
+    "category": "Bakery",
+    "price": 4.11,
+    "brand": "Brand 10",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P049",
+    "name": "Personal Care Product 1",
+    "category": "Personal Care",
+    "price": 2.94,
+    "brand": "Brand 5",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P050",
+    "name": "Personal Care Product 2",
+    "category": "Personal Care",
+    "price": 5.43,
+    "brand": "Brand 3",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P051",
+    "name": "Personal Care Product 3",
+    "category": "Personal Care",
+    "price": 10.56,
+    "brand": "Brand 15",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P052",
+    "name": "Personal Care Product 4",
+    "category": "Personal Care",
+    "price": 4.18,
+    "brand": "Brand 10",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P053",
+    "name": "Personal Care Product 5",
+    "category": "Personal Care",
+    "price": 7.7,
+    "brand": "Brand 9",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P054",
+    "name": "Personal Care Product 6",
+    "category": "Personal Care",
+    "price": 2.83,
+    "brand": "Brand 20",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P055",
+    "name": "Personal Care Product 7",
+    "category": "Personal Care",
+    "price": 13.99,
+    "brand": "Brand 12",
+    "budget_tier": "High"
+  },
+  {
+    "product_id": "P056",
+    "name": "Personal Care Product 8",
+    "category": "Personal Care",
+    "price": 2.52,
+    "brand": "Brand 20",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P057",
+    "name": "Personal Care Product 9",
+    "category": "Personal Care",
+    "price": 18.13,
+    "brand": "Brand 1",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P058",
+    "name": "Personal Care Product 10",
+    "category": "Personal Care",
+    "price": 17.15,
+    "brand": "Brand 14",
+    "budget_tier": "Medium"
+  },
+  {
+    "product_id": "P059",
+    "name": "Personal Care Product 11",
+    "category": "Personal Care",
+    "price": 15.88,
+    "brand": "Brand 12",
+    "budget_tier": "Low"
+  },
+  {
+    "product_id": "P060",
+    "name": "Personal Care Product 12",
+    "category": "Personal Care",
+    "price": 4.83,
+    "brand": "Brand 8",
+    "budget_tier": "Medium"
+  }
+]
