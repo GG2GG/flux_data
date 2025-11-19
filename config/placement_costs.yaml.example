@@ -1,0 +1,102 @@
+# Placement Cost Configuration
+# Configure placement costs by zone type and store
+
+version: "1.0"
+
+# ============================================================================
+# ZONE DEFAULTS - Industry Standard Pricing (USD/month)
+# ============================================================================
+# Based on retail industry research and typical placement contracts
+zone_defaults:
+  endcap: 2000          # End-cap displays - premium visibility
+  checkout: 1500        # Checkout lanes - impulse buying zone
+  eye_level: 1000       # Eye-level shelving - optimal visibility
+  regular_shelf: 800    # Regular shelf space - standard pricing
+  low_shelf: 500        # Bottom shelf - economy pricing
+  top_shelf: 600        # Top shelf - lower visibility
+
+# ============================================================================
+# PLACEMENT SETTINGS
+# ============================================================================
+placement:
+  # Default placement duration in weeks
+  default_duration_weeks: 4
+
+  # Budget flexibility - allow recommendations slightly over budget
+  budget_flexibility_pct: 10
+
+  # Minimum budget required
+  min_budget_usd: 500
+
+# ============================================================================
+# STORE-SPECIFIC OVERRIDES (Optional)
+# ============================================================================
+# Override default costs for specific stores or locations
+
+stores:
+  # Example: Main store with custom pricing
+  # S001:
+  #   name: "Main Store - Downtown"
+  #   use_zone_defaults: true  # Use defaults for unlisted aisles
+  #
+  #   aisles:
+  #     A001:
+  #       name: "Beverage Aisle - Eye Level"
+  #       monthly_cost: 1200
+  #       notes: "Premium beverage section with enhanced lighting"
+  #
+  #     A002:
+  #       name: "Main Entrance Endcap"
+  #       monthly_cost: 2500
+  #       notes: "High traffic entrance display"
+  #
+  #     A003:
+  #       name: "Checkout Lane 1"
+  #       monthly_cost: 1800
+  #       notes: "Express lane - high conversion"
+
+  # Example: Secondary location with different pricing
+  # S002:
+  #   name: "Store - Suburban Location"
+  #   use_zone_defaults: true
+  #
+  #   aisles:
+  #     A001:
+  #       monthly_cost: 800
+  #       notes: "Lower traffic suburban store"
+
+# ============================================================================
+# SEASONAL MULTIPLIERS (Optional)
+# ============================================================================
+# Adjust costs during peak seasons
+
+seasonal_adjustments:
+  enabled: false
+
+  # Multipliers by month (1.0 = normal, 1.5 = 50% premium)
+  # months:
+  #   11: 1.3  # November - holiday shopping
+  #   12: 1.5  # December - peak holiday season
+  #   1: 0.9   # January - post-holiday discount
+
+# ============================================================================
+# TRAFFIC-BASED PRICING (Optional)
+# ============================================================================
+# Adjust costs based on actual foot traffic
+
+traffic_pricing:
+  enabled: false
+
+  # Cost multiplier by traffic level
+  # multipliers:
+  #   high: 1.3     # 250+ visitors/day
+  #   medium: 1.0   # 150-250 visitors/day
+  #   low: 0.8      # <150 visitors/day
+
+# ============================================================================
+# NOTES
+# ============================================================================
+# - All costs in USD per month
+# - Duration in weeks (4 weeks = 1 month)
+# - Store-specific overrides take precedence over zone defaults
+# - Uncomment sections to enable custom pricing

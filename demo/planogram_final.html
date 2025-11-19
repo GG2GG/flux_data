@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
             padding: 15px;
             min-height: 100vh;
         }
@@ -54,9 +54,9 @@
         }
 
         .panel h2 {
-            color: #667eea;
+            color: #4a5568;
             margin-bottom: 15px;
-            border-bottom: 3px solid #667eea;
+            border-bottom: 3px solid #4a5568;
             padding-bottom: 8px;
             font-size: 1.3em;
         }
@@ -87,13 +87,13 @@
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #4a5568;
         }
 
         .analyze-btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -177,7 +177,7 @@
         .shelf-location:hover {
             transform: scale(1.08);
             z-index: 10;
-            border-color: #667eea;
+            border-color: #4a5568;
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
 
@@ -251,7 +251,7 @@
             margin-bottom: 10px;
             background: #f8f9fa;
             border-radius: 10px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #4a5568;
             cursor: pointer;
             transition: all 0.3s;
         }
@@ -274,7 +274,7 @@
         }
 
         .recommendation-item .roi-score {
-            color: #667eea;
+            color: #4a5568;
             font-weight: bold;
             font-size: 16px;
         }
@@ -292,7 +292,7 @@
         }
 
         .chat-section h3 {
-            color: #667eea;
+            color: #4a5568;
             margin-bottom: 12px;
             font-size: 16px;
         }
@@ -324,7 +324,7 @@
         }
 
         .chat-message.user {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
             color: white;
             margin-left: auto;
         }
@@ -357,12 +357,12 @@
 
         #chatInput:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #4a5568;
         }
 
         .send-btn {
             padding: 10px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -442,7 +442,7 @@
         }
 
         .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
             color: white;
             padding: 25px 30px;
             border-radius: 16px 16px 0 0;
@@ -663,7 +663,7 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 3px solid #667eea;
+            border-bottom: 3px solid #4a5568;
         }
 
         .shelf-detail-title {
@@ -726,7 +726,7 @@
         }
 
         .info-section strong {
-            color: #667eea;
+            color: #4a5568;
             font-weight: 700;
         }
 
@@ -1391,20 +1391,20 @@
                         <input type="number" id="expectedROI" value="1.5" step="0.1" min="0" required>
                     </div>
 
-                    <button type="submit" class="analyze-btn">🎯 Analyze Placement</button>
+                    <button type="submit" class="analyze-btn">Analyze Placement</button>
                 </form>
             </div>
 
             <!-- Middle Panel: Store Planogram -->
             <div class="panel" id="planogramPanel">
-                <h2>🗺️ Store Planogram</h2>
+                <h2>Store Planogram</h2>
                 <p>Click on any location to view details and chat about placement strategy</p>
                 <div id="store-map"></div>
             </div>
 
             <!-- Right Panel: Recommendations & Chat -->
             <div class="panel">
-                <h2>📊 Recommendations</h2>
+                <h2>Recommendations</h2>
                 <div id="recommendationsContainer">
                     <p class="empty-message">Submit product details to see recommendations</p>
                 </div>
@@ -1444,25 +1444,28 @@
         let selectedLocation = null;
         let chatHistory = []; // Track conversation history
 
-        // Store location definitions - Arranged like a real store layout
+        // Store location definitions - MUST match backend location names exactly
+        // Backend locations from data/archive/synthetic/locations.json
         const storeLocationMap = {
             // Front of store - Entrance area (bottom)
-            'Main Entrance Display': { id: 'L001', x: 280, y: 400, width: 180, height: 80, zone: 'Entrance' },
+            'Main Entrance Display': { id: 'L002', x: 280, y: 400, width: 180, height: 80, zone: 'Main Entrance' },
 
             // Checkout lanes (near entrance)
-            'Checkout Lane 1': { id: 'L002', x: 50, y: 400, width: 100, height: 80, zone: 'Checkout' },
-            'Checkout Lane 2': { id: 'L003', x: 480, y: 400, width: 100, height: 80, zone: 'Checkout' },
-            'Checkout Lane 3': { id: 'L004', x: 600, y: 400, width: 100, height: 80, zone: 'Checkout' },
+            'Checkout Lane 1': { id: 'L003', x: 50, y: 400, width: 100, height: 80, zone: 'Checkout' },
 
             // Middle section - Main aisles (eye level)
-            'Beverages Aisle - Eye Level': { id: 'L005', x: 50, y: 250, width: 180, height: 120, zone: 'Eye Level' },
-            'Snacks Aisle - Eye Level': { id: 'L006', x: 260, y: 250, width: 180, height: 120, zone: 'Eye Level' },
-            'Dairy Aisle - Eye Level': { id: 'L007', x: 470, y: 250, width: 180, height: 120, zone: 'Eye Level' },
+            'Beverage Aisle - Eye Level': { id: 'L004', x: 50, y: 250, width: 180, height: 120, zone: 'Eye Level' },
+            'Snack Aisle - Eye Level': { id: 'L005', x: 260, y: 250, width: 180, height: 120, zone: 'Eye Level' },
+            'Beverage Aisle - Bottom': { id: 'L010', x: 50, y: 130, width: 180, height: 100, zone: 'Bottom Shelf' },
+
+            // Regular sections
+            'Dairy Section - Regular': { id: 'L006', x: 470, y: 250, width: 180, height: 120, zone: 'Regular Shelf' },
+            'Personal Care Aisle': { id: 'L009', x: 470, y: 130, width: 180, height: 100, zone: 'Regular Shelf' },
 
             // Back of store - Endcaps and specialty areas
-            'Beverages End Cap': { id: 'L008', x: 50, y: 30, width: 140, height: 180, zone: 'End Cap' },
-            'Snacks End Cap': { id: 'L009', x: 300, y: 30, width: 140, height: 180, zone: 'End Cap' },
-            'Bakery Section': { id: 'L010', x: 550, y: 30, width: 150, height: 180, zone: 'Specialty' }
+            'End Cap 1 - Beverages': { id: 'L001', x: 50, y: 30, width: 140, height: 80, zone: 'End Cap' },
+            'End Cap 2 - Snacks': { id: 'L008', x: 300, y: 30, width: 140, height: 80, zone: 'End Cap' },
+            'Bakery Display': { id: 'L007', x: 700, y: 30, width: 150, height: 450, zone: 'Bakery' }
         };
 
         // Initialize planogram with locations
@@ -1572,7 +1575,7 @@
                 console.error('Error:', error);
                 document.getElementById('recommendationsContainer').innerHTML =
                     `<p style="color: #d32f2f; padding: 20px; text-align: center;">
-                        ❌ Error: ${error.message}<br>
+                        X Error: ${error.message}<br>
                         <small>Make sure the API server is running on port 8000</small>
                     </p>`;
             }
@@ -1674,7 +1677,7 @@
             input.value = '';
 
             // Add loading indicator
-            const loadingMsg = addChatMessage('assistant', '💭 Thinking...');
+            const loadingMsg = addChatMessage('assistant', ' Thinking...');
 
             // Build conversation history context
             let historyContext = '';
@@ -1723,7 +1726,7 @@
             } catch (error) {
                 console.error('Chat error:', error);
                 loadingMsg.remove();
-                addChatMessage('assistant', '❌ Error sending message. Please try again.');
+                addChatMessage('assistant', 'X Error sending message. Please try again.');
             }
         }
 
@@ -1799,7 +1802,7 @@
             // Define standard shelf rows with comprehensive ROI data and insights
             const rows = [
                 {
-                    name: '👁️ Eye Level (1.2m - 1.6m)',
+                    name: 'Eye Level (1.2m - 1.6m)',
                     multiplier: 1.3,
                     visibility: 'Excellent',
                     capacity: '12-15 facings',
@@ -1813,7 +1816,7 @@
                     researchBacked: 'Trax Retail 2024 study'
                 },
                 {
-                    name: '🤚 Reach Level (1.6m - 1.9m)',
+                    name: 'Reach Level (1.6m - 1.9m)',
                     multiplier: 1.1,
                     visibility: 'Good',
                     capacity: '12-15 facings',
@@ -1827,7 +1830,7 @@
                     researchBacked: 'Nielsen IQ behavioral analysis'
                 },
                 {
-                    name: '✋ Touch Level (0.9m - 1.2m)',
+                    name: 'Touch Level (0.9m - 1.2m)',
                     multiplier: 1.15,
                     visibility: 'Good',
                     capacity: '12-15 facings',
@@ -1841,7 +1844,7 @@
                     researchBacked: 'Cross-merchandising increases basket size by 22%'
                 },
                 {
-                    name: '🔽 Stoop Level (0.5m - 0.9m)',
+                    name: 'Stoop Level (0.5m - 0.9m)',
                     multiplier: 0.85,
                     visibility: 'Fair',
                     capacity: '15-18 facings',
@@ -1855,7 +1858,7 @@
                     researchBacked: 'Tastewise 2025 shelf strategy study'
                 },
                 {
-                    name: '⬇️ Bottom Shelf (0m - 0.5m)',
+                    name: 'Bottom Shelf (0m - 0.5m)',
                     multiplier: 0.7,
                     visibility: 'Poor',
                     capacity: '18-20 facings',
@@ -1917,7 +1920,7 @@
             `;
 
             // Create actual shelf unit visualization
-            let html = '<div class="shelf-rows-title">🛒 Retail Shelf Unit - Side View</div>';
+            let html = '<div class="shelf-rows-title">Retail Shelf Unit - Side View</div>';
             html += '<div class="shelf-unit-container">';
 
             // Add vertical support posts
@@ -1975,7 +1978,7 @@
             // Add legend
             html += `
                 <div style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 10px; font-size: 12px;">
-                    <strong style="color: #1e293b;">💡 How to use:</strong> Hover over any shelf to see detailed insights.
+                    <strong style="color: #1e293b;"> How to use:</strong> Hover over any shelf to see detailed insights.
                     Color indicates ROI performance:
                     <span style="color: #10b981; font-weight: 700;">Green (High)</span>,
                     <span style="color: #3b82f6; font-weight: 700;">Blue (Medium)</span>,
@@ -2022,28 +2025,28 @@
                     <div class="shelf-detail-grid">
                         ${row.psychology_insight ? `
                         <div class="info-section">
-                            <strong>💡 Psychology Insight</strong><br>
+                            <strong> Psychology Insight</strong><br>
                             ${row.psychology_insight}
                         </div>
                         ` : ''}
 
                         ${row.sales_impact ? `
                         <div class="info-section impact">
-                            <strong>📊 Sales Impact</strong><br>
+                            <strong> Sales Impact</strong><br>
                             ${row.sales_impact}
                         </div>
                         ` : ''}
 
                         ${row.customer_behavior ? `
                         <div class="info-section behavior">
-                            <strong>👥 Customer Behavior</strong><br>
+                            <strong> Customer Behavior</strong><br>
                             ${row.customer_behavior}
                         </div>
                         ` : ''}
 
                         ${row.best_for ? `
                         <div class="info-section bestfor">
-                            <strong>✨ Best Products For</strong><br>
+                            <strong> Best Products For</strong><br>
                             ${row.best_for}
                         </div>
                         ` : ''}
@@ -2055,7 +2058,7 @@
                             <div style="font-size: 16px; font-weight: 700; color: #1e293b;">${row.capacity}</div>
                         </div>
                         <div>
-                            <div style="font-size: 11px; color: #64748b; margin-bottom: 5px;">👁️ Visibility</div>
+                            <div style="font-size: 11px; color: #64748b; margin-bottom: 5px;">Visibility</div>
                             <div style="font-size: 16px; font-weight: 700; color: #1e293b;">${row.visibility_factor}</div>
                         </div>
                         <div>
@@ -2082,10 +2085,6 @@
             detailsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        // Select a specific shelf row (legacy function kept for compatibility)
-        function selectShelfRow(rowId, rowName) {
-            console.log('Selected shelf row:', rowId, rowName);
-        }
 
         // Close modal when clicking outside
         document.getElementById('shelfDetailModal')?.addEventListener('click', function(e) {

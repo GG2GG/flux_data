@@ -1,0 +1,132 @@
+{
+  "Beverages": {
+    "endcap": {
+      "lift": 2.0,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 219
+    },
+    "eye_level": {
+      "lift": 1.37,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 246
+    },
+    "checkout": {
+      "lift": 1.64,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 299
+    },
+    "low_shelf": {
+      "lift": 0.85,
+      "source": "industry_default",
+      "confidence": "low",
+      "sample_size": 0
+    }
+  },
+  "Snacks": {
+    "endcap": {
+      "lift": 1.75,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 277
+    },
+    "eye_level": {
+      "lift": 1.31,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 334
+    },
+    "checkout": {
+      "lift": 1.46,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 512
+    },
+    "low_shelf": {
+      "lift": 0.8,
+      "source": "industry_default",
+      "confidence": "low",
+      "sample_size": 0
+    }
+  },
+  "Dairy": {
+    "endcap": {
+      "lift": 1.93,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 288
+    },
+    "eye_level": {
+      "lift": 1.37,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 376
+    },
+    "checkout": {
+      "lift": 1.58,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 325
+    },
+    "low_shelf": {
+      "lift": 0.9,
+      "source": "industry_default",
+      "confidence": "low",
+      "sample_size": 0
+    }
+  },
+  "Bakery": {
+    "endcap": {
+      "lift": 1.88,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 256
+    },
+    "eye_level": {
+      "lift": 1.28,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 420
+    },
+    "checkout": {
+      "lift": 1.53,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 294
+    },
+    "low_shelf": {
+      "lift": 0.85,
+      "source": "industry_default",
+      "confidence": "low",
+      "sample_size": 0
+    }
+  },
+  "Personal Care": {
+    "endcap": {
+      "lift": 1.81,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 312
+    },
+    "eye_level": {
+      "lift": 1.32,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 379
+    },
+    "checkout": {
+      "lift": 1.56,
+      "source": "computed",
+      "confidence": "high",
+      "sample_size": 281
+    },
+    "low_shelf": {
+      "lift": 0.9,
+      "source": "industry_default",
+      "confidence": "low",
+      "sample_size": 0
+    }
+  }
+}
